@@ -4,7 +4,6 @@ export const postgresqlRepo = {
   editCategory,
   deleteCategory,
   findUser,
-  createUser,
   deleteUser,
   getExpenses,
   getYears,
@@ -74,11 +73,6 @@ async function findUser(username) {
     .select('*')
     .from({ u: 'users' })
     .where({ username: username });
-}
-
-async function createUser(user) {
-  return knex('users')
-    .insert({ username: user.username, hash: user.hash });
 }
 
 async function deleteUser(user) {

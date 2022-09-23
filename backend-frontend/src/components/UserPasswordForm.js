@@ -7,7 +7,6 @@ import Paper from '@mui/material/Paper';
 import MoneyIcon from '@mui/icons-material/Money';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
-import Link from 'src/components/Link';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import IconButton from '@mui/material/IconButton';
@@ -15,29 +14,12 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
 export default function UserPasswordForm(props) {
-  const { action, register, handleSubmit, errors } = props;
+  const { register, handleSubmit, errors } = props;
 
   // Show password?
   const [showPassword, setShowPassword] = React.useState(false);
   const handleClickShowPassword = () => setShowPassword(!showPassword);
   const handleMouseDownPassword = () => setShowPassword(!showPassword);
-
-  let title = '';
-  let buttonText = '';
-  let linkText = '';
-  let linkHref = '';
-
-  if (action === 'register') {
-    title = 'Register';
-    buttonText = 'REGISTER';
-    linkText = 'LOG IN';
-    linkHref = '/account/login';
-  } else {
-    title = 'Login';
-    buttonText = 'LOGIN';
-    linkText = 'REGISTER';
-    linkHref = '/account/register';
-  }
 
   return (
     <Box
@@ -61,7 +43,7 @@ export default function UserPasswordForm(props) {
             <MoneyIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
-            {title}
+            {'Login'}
           </Typography>
           <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1, ml: 1 }}>
             <TextField
@@ -108,12 +90,7 @@ export default function UserPasswordForm(props) {
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
-              {buttonText}
-            </Button>
-            <Button>
-              <Link href={linkHref} variant="body2">
-                {linkText}
-              </Link>
+              {'LOGIN'}
             </Button>
           </Box>
         </Paper>

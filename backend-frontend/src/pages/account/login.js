@@ -33,7 +33,6 @@ export default function Login() {
 
   return (
     <UserPasswordForm
-      action={'login'}
       register={register}
       handleSubmit={handleSubmit(onSubmit)}
       errors={errors}

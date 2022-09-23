@@ -2,7 +2,6 @@ import { postgresqlRepo } from 'src/helpers/api';
 
 export const usersRepo = {
   findUser,
-  createUser,
   deleteUser,
 };
 
@@ -17,10 +16,6 @@ async function findUser(username) {
   // Convert hash from Buffer to string
   user.hash = user.hash.toString()
   return user;
-}
-
-async function createUser(user) {
-  return postgresqlRepo.createUser(user);
 }
 
 async function deleteUser(user) {
