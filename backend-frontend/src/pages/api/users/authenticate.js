@@ -16,8 +16,8 @@ async function authenticate(req, res) {
     return res.status(400).json({ message: 'Username or password is incorrect' });
   }
 
-  // create a jwt token that is valid for 7 days
-  const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+  // create a jwt token that is valid for 28 days
+  const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET, { expiresIn: '28d' });
 
   // return basic user details and token
   return res.status(200).json({
