@@ -100,7 +100,6 @@ export default function UserPasswordForm(props) {
 }
 
 UserPasswordForm.propTypes = {
-  action: PropTypes.string.isRequired,
   register: PropTypes.func.isRequired,
   handleSubmit: PropTypes.func.isRequired,
   errors: PropTypes.object.isRequired,

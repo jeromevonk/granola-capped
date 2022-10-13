@@ -694,7 +694,7 @@ export default function ExpensesTable(props) {
                             whiteSpace: "normal",
                             wordWrap: "break-word",
                             fontWeight: row.recurring ? "bold" : "normal"
-                          }}>{row.description} {'\n'} {row.details && `(${row.details})`}
+                          }}>{row.description} {'\n'} {row.details && <span style={{color: 'grey', fontSize: '12px'}}>{row.details}</span>}
                         </TableCell>
                       </CustomWidthTooltip>
                       {
