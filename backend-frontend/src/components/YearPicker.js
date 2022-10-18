@@ -30,6 +30,7 @@ export default function YearPicker(props) {
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <DatePicker
         views={['year']}
+        openTo='year'
         label="Year"
         value={new Date(year, 0)}
         sx={{ width: 1 }}
@@ -38,7 +39,7 @@ export default function YearPicker(props) {
         onChange={(newValue) => {
           handleChange('year', getYear(newValue));
         }}
-        renderInput={(params) => <TextField {...params} onKeyDown={e => e.preventDefault()} />}
+        renderInput={(params) => <TextField {...params} onKeyDown={e => e.preventDefault()} size='small'/>}
       />
     </LocalizationProvider>
   );
