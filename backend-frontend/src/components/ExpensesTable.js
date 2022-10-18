@@ -33,6 +33,7 @@ import DoubleArrowIcon from '@mui/icons-material/DoubleArrow';
 import FilterAlt from '@mui/icons-material/FilterAlt';
 import FilterAltOff from '@mui/icons-material/FilterAltOff';
 import CloseIcon from '@mui/icons-material/Close';
+import AddIcon from '@mui/icons-material/Add';
 import Stack from '@mui/material/Stack';
 import { visuallyHidden } from '@mui/utils';
 import { AppContext } from 'src/pages/_app';
@@ -733,17 +734,36 @@ export default function ExpensesTable(props) {
             </TableBody>
           </Table>
         </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[8, 20, 50]}
-          component="div"
-          count={filteredRows.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          showFirstButton={largeScreen.width ? true : false}
-          showLastButton={largeScreen.width ? true : false}
-        />
+        <Stack direction='row' justifyContent='space-between' alignItems={'center'}>
+          <Box
+            sx={{
+              marginLeft: 1
+            }}
+          >
+            <span>
+              <IconButton
+                onClick={() => {
+                  // handleAction('duplicate', selected)
+                }}
+              >
+                <AddIcon htmlColor="#04d164" />
+              </IconButton>
+            </span>
+          </Box>
+          <TablePagination
+            rowsPerPageOptions={[8, 20, 50]}
+            component="div"
+            count={filteredRows.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            showFirstButton={largeScreen.width ? true : false}
+            showLastButton={largeScreen.width ? true : false}
+            labelRowsPerPage='Rows:'
+          />
+        </Stack>
+
       </Paper>
     </Box>
   );
