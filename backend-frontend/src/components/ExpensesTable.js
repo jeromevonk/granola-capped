@@ -328,6 +328,11 @@ const ExpensesTableToolbar = (props) => {
                 }
               </IconButton>
             </Tooltip>
+            {
+              // -----------------------------------
+              // Popovers
+              // -----------------------------------
+            }
             <Popover
               elevation={10}
               open={filterPopoverOpen}
@@ -694,7 +699,7 @@ export default function ExpensesTable(props) {
                             whiteSpace: "normal",
                             wordWrap: "break-word",
                             fontWeight: row.recurring ? "bold" : "normal"
-                          }}>{row.description} {'\n'} {row.details && <span style={{color: 'grey', fontSize: '12px'}}>{row.details}</span>}
+                          }}>{row.description} {'\n'} {row.details && <span style={{ color: 'grey', fontSize: '12px' }}>{row.details}</span>}
                         </TableCell>
                       </CustomWidthTooltip>
                       {
@@ -736,6 +741,8 @@ export default function ExpensesTable(props) {
           page={page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
+          showFirstButton={largeScreen.width ? true : false}
+          showLastButton={largeScreen.width ? true : false}
         />
       </Paper>
     </Box>
