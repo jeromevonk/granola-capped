@@ -248,7 +248,7 @@ function Index(props) {
       {/* Floating action button */}
       <Fab
         color="primary"
-        size='small'
+        size='medium'
         onClick={() => handleAction('new')}
         sx={{
           margin: 0,
