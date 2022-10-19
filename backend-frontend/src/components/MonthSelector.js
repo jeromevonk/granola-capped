@@ -18,7 +18,11 @@ export default function MonthSelector(props) {
   const padding = { padding: { xs: '7px 4px', md: '7px 20px' } };
   return (
 
-    <Stack spacing={2} direction={largeScreen.width ? 'row' : 'column'} alignItems="center">
+    <Stack
+      spacing={1}
+      direction={largeScreen.width ? 'row' : 'column'}
+      alignItems="center"
+    >
       <Stack sx={{ width: '200px' }}>
         <YearPicker
           handleChange={handleChange}
