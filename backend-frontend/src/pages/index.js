@@ -104,6 +104,9 @@ function Index(props) {
           alertService.success(`${response.deleted.length} expense(s) deleted, ${response.failed.length} failed`);
         })
         .catch(err => alertService.error(`API error: ${err}`));
+    } else if (action === 'new') {
+      // Push to new expense page with no data
+      router.push({ pathname: '/new-expense' });
     } else if (action === 'edit' || action === 'duplicate') {
       // Find expense
       const exp = findExpense(selected[0], selectedDate.year, selectedDate.month);

@@ -743,7 +743,7 @@ export default function ExpensesTable(props) {
             <span>
               <IconButton
                 onClick={() => {
-                  // handleAction('duplicate', selected)
+                  props.handleAction('new')
                 }}
               >
                 <AddIcon htmlColor="#04d164" />
