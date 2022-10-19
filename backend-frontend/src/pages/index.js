@@ -2,6 +2,8 @@ import * as React from 'react';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
+import Fab from '@mui/material/Fab';
+import AddIcon from '@mui/icons-material/Add';
 import LinearProgress from '@mui/material/LinearProgress';
 import { useRouter, withRouter } from 'next/router'
 import ExpensesTable from '../components/ExpensesTable';
@@ -243,6 +245,22 @@ function Index(props) {
           }
         </Stack>
       </Box>
+      {/* Floating action button */}
+      <Fab
+        color="primary"
+        size='small'
+        onClick={() => handleAction('new')}
+        sx={{
+          margin: 0,
+          top: 'auto',
+          right: 'auto',
+          bottom: 20,
+          left: 20,
+          position: 'fixed',
+        }}
+      >
+        <AddIcon />
+      </Fab>
     </Container>
   );
 }
