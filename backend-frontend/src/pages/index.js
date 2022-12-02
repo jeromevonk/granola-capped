@@ -9,7 +9,7 @@ import { useRouter, withRouter } from 'next/router'
 import ExpensesTable from '../components/ExpensesTable';
 import MonthSelector from '../components/MonthSelector';
 import { expenseService, alertService } from 'src/services';
-import { getCustomDateString, getCategoryTitles } from 'src/helpers'
+import { getCustomDateString, getCategoryTitles, useKeyPress } from 'src/helpers'
 import { AppContext } from 'src/pages/_app';
 
 function Index(props) {
@@ -27,6 +27,33 @@ function Index(props) {
     year: Number(props.router.query.year) || new Date().getFullYear(),
     month: Number(props.router.query.month) || new Date().getMonth() + 1 // to get current month
   });
+
+  const handleChange = (name, value) => {
+    setSelectedDate(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  };
+
+  // -------------------------------------------
+  // useKeyPress hook
+  // let's capture left and right arrows
+  // and use them to change the months
+  // -------------------------------------------
+  const leftArrow = useKeyPress("ArrowLeft");
+  const rightArrow = useKeyPress("ArrowRight");
+
+  React.useEffect(() => {
+    if (leftArrow && selectedDate.month > 1) {
+      handleChange('month', selectedDate.month - 1)
+    }
+
+    if (rightArrow && selectedDate.month < 12) {
+      handleChange('month', selectedDate.month + 1)
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [leftArrow, rightArrow]);
 
   // Initial filter
   const initialFilter = {
@@ -69,13 +96,6 @@ function Index(props) {
     }
     return year;
   }
-
-  const handleChange = (name, value) => {
-    setSelectedDate(prev => ({
-      ...prev,
-      [name]: value
-    }))
-  };
 
   const findExpense = (target, year, month) => {
     return expenses[year][month].find(item => item.id === target);

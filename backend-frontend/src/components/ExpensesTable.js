@@ -36,7 +36,14 @@ import CloseIcon from '@mui/icons-material/Close';
 import Stack from '@mui/material/Stack';
 import { visuallyHidden } from '@mui/utils';
 import { AppContext } from 'src/pages/_app';
-import { getCategoryTitles, customlocaleString, getParentCategoryId, sortTitleAlphabetically, getComparator } from 'src/helpers'
+import { 
+  getCategoryTitles, 
+  customlocaleString, 
+  getParentCategoryId, 
+  sortTitleAlphabetically, 
+  getComparator,
+  useKeyPress
+} from 'src/helpers'
 import theme from 'src/theme';
 
 const getTotalString = (expensesSum, largeScreen, numSelected) => {
@@ -497,6 +504,12 @@ export default function ExpensesTable(props) {
   });
 
   React.useEffect(() => {
+    // If month or year has hanged, clear selected array and go back to page 0
+    setSelected([]);
+    setPage(0);
+  }, [props.title]);
+
+  React.useEffect(() => {
     // If screen orientation has changed, set number of rows per page
     setRowsPerPage(largeScreen.height ? 20 : 8)
   }, [largeScreen.height]);
@@ -506,13 +519,37 @@ export default function ExpensesTable(props) {
     setPage(0);
   }, [filter]);
 
-  React.useEffect(() => {
-    // If month or year has hanged, clear selected array and go back to page 0
-    setSelected([]);
-    setPage(0);
-  }, [props.title]);
-
   const rows = props.expenses || [];
+
+  // -------------------------------------------
+  // useKeyPress hook
+  // let's capture left and right arrows
+  // and use them to change the months
+  // -------------------------------------------
+  const keyH = useKeyPress("h"); // as in 'home'
+  const keyJ = useKeyPress("j");
+  const keyK = useKeyPress("k");
+  const keyL = useKeyPress("l"); // as in 'last'
+
+  React.useEffect(() => {
+    if (keyH) {
+      handleChangePage(undefined, 0);
+    }
+
+    if (keyJ && page > 0) {
+      handleChangePage(undefined, page - 1);
+    }
+
+    if (keyK && page < pageCount) {
+      handleChangePage(undefined, page + 1);
+    }
+
+    if (keyL) {
+      handleChangePage(undefined, pageCount);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keyH, keyJ, keyK, keyL]);
 
   const StyledTableRow = styled(TableRow)(({ theme: appTheme }) => ({
     '&:nth-of-type(odd)': {
@@ -613,6 +650,9 @@ export default function ExpensesTable(props) {
     }
   });
 
+  // Number of pages
+  const pageCount = Math.floor(filteredRows.length / rowsPerPage);
+
   // -------------------------------------------------------
   // Sum expenses
   // If none is selected, sum them all
@@ -629,6 +669,12 @@ export default function ExpensesTable(props) {
   }, 0);
 
   expensesSum = customlocaleString(expensesSum);
+
+  // TODO: acontece em prod?
+  if ( page > pageCount) {
+    console.log('vai ter warning');
+    return <div></div>
+  }
 
   return (
     <Box sx={{ width: '100%' }}>
@@ -747,8 +793,6 @@ export default function ExpensesTable(props) {
           showLastButton={largeScreen.width ? true : false}
           labelRowsPerPage='Rows:'
         />
-
-
       </Paper>
     </Box>
   );
