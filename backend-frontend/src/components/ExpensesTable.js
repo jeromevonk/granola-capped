@@ -673,7 +673,7 @@ export default function ExpensesTable(props) {
   // TODO: acontece em prod?
   if ( page > pageCount) {
     console.log('vai ter warning');
-    return <div></div>
+    // return <div></div>
   }
 
   return (

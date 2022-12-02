@@ -46,6 +46,11 @@ const pages = [
     title: 'Evolution',
     url: '/evolution'
   },
+  {
+    title: 'Search',
+    url: '/search?query=hotel',
+    onlySmallScreen: true
+  },
 ];
 
 const settings = [
@@ -305,6 +310,7 @@ const ResponsiveAppBar = () => {
           }
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
             {pages.map((page) => (
+              !page.onlySmallScreen &&
               <Button
                 key={page.title}
                 onClick={() => handleNavMenuClick(page)}
