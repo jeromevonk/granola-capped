@@ -531,6 +531,9 @@ export default function ExpensesTable(props) {
   const keyJ = useKeyPress("j");
   const keyK = useKeyPress("k");
   const keyL = useKeyPress("l"); // as in 'last'
+  const keyT = useKeyPress("t"); // as in 'toggle'
+  const keyD = useKeyPress("d"); // as in 'date'
+  const keyS = useKeyPress("s"); // as in 'spent'
 
   React.useEffect(() => {
     if (!searchFocus) {
@@ -549,10 +552,22 @@ export default function ExpensesTable(props) {
       if (keyL) {
         handleChangePage(undefined, pageCount);
       }
+
+      if (keyT) {
+        handleChangeOrder();
+      }
+
+      if (keyD) {
+        handleChangeOrderBy('date');
+      }
+
+      if (keyS) {
+        handleChangeOrderBy('spent');
+      }
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [keyH, keyJ, keyK, keyL, searchFocus]);
+  }, [keyH, keyJ, keyK, keyL, keyT, keyD, keyS, searchFocus]);
 
   const StyledTableRow = styled(TableRow)(({ theme: appTheme }) => ({
     '&:nth-of-type(odd)': {
@@ -602,6 +617,19 @@ export default function ExpensesTable(props) {
   const handleChangePage = (_event, newPage) => {
     setPage(newPage);
   };
+
+  const handleChangeOrder = () => {
+    setOrder(prev => {
+      if (prev === 'asc') return 'desc';
+      else return 'asc';
+    });
+  }
+
+  const handleChangeOrderBy = (column) => {
+    setOrderBy(column);
+  };
+
+  
 
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
