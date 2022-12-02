@@ -105,6 +105,7 @@ const ResponsiveAppBar = () => {
   // Context
   const context = React.useContext(AppContext);
   const [visibility, setVisibility] = context?.visibility;
+  const {1: setSearchFocus} = context?.searchFocus;
   const setCategories = context?.categories.setCategories;
 
   // States
@@ -336,6 +337,12 @@ const ResponsiveAppBar = () => {
                 placeholder="Search…"
                 inputProps={{ 'aria-label': 'search', spellCheck: 'false' }}
                 onKeyPress={handleSearch}
+                onFocus={(e) => {
+                  setSearchFocus(true);
+                }}
+                onBlur={(e) => {
+                  setSearchFocus(false);
+                }}
               />
             </Search>
           </Box>

@@ -17,6 +17,7 @@ function Index(props) {
   const context = React.useContext(AppContext);
   const categories = context?.categories.all;
   const largeScreen = context?.largeScreen;
+  const [searchFocus] = context?.searchFocus;
 
   // Router
   const router = useRouter();
@@ -44,16 +45,19 @@ function Index(props) {
   const rightArrow = useKeyPress("ArrowRight");
 
   React.useEffect(() => {
-    if (leftArrow && selectedDate.month > 1) {
-      handleChange('month', selectedDate.month - 1)
-    }
+    if (!searchFocus) {
 
-    if (rightArrow && selectedDate.month < 12) {
-      handleChange('month', selectedDate.month + 1)
+      if (leftArrow && selectedDate.month > 1) {
+        handleChange('month', selectedDate.month - 1)
+      }
+
+      if (rightArrow && selectedDate.month < 12) {
+        handleChange('month', selectedDate.month + 1)
+      }
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [leftArrow, rightArrow]);
+  }, [leftArrow, rightArrow, searchFocus]);
 
   // Initial filter
   const initialFilter = {

@@ -33,6 +33,7 @@ export default function MyApp(props) {
   const [authorized, setAuthorized] = useState(false);
   const [largeScreen, setLargeScreen] = useState({ width: true, height: true });
   const [visibility, setVisibility] = useState(true);
+  const [searchFocus, setSearchFocus] = useState(false);
 
   // ----------------------------------------
   // Set listeners for screen change
@@ -155,6 +156,10 @@ export default function MyApp(props) {
           visibility: [
             visibility,
             setVisibility
+          ],
+          searchFocus: [
+            searchFocus, 
+            setSearchFocus
           ]
         }}>
           <div>

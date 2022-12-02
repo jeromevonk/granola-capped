@@ -36,11 +36,11 @@ import CloseIcon from '@mui/icons-material/Close';
 import Stack from '@mui/material/Stack';
 import { visuallyHidden } from '@mui/utils';
 import { AppContext } from 'src/pages/_app';
-import { 
-  getCategoryTitles, 
-  customlocaleString, 
-  getParentCategoryId, 
-  sortTitleAlphabetically, 
+import {
+  getCategoryTitles,
+  customlocaleString,
+  getParentCategoryId,
+  sortTitleAlphabetically,
   getComparator,
   useKeyPress
 } from 'src/helpers'
@@ -221,14 +221,6 @@ const ExpensesTableToolbar = (props) => {
           </Stack>
         ) : (
           <Stack direction="row" spacing={1} alignItems="center" justifyContent="flex-end">
-            <Tooltip title="Copy recurring expenses to next month">
-              <IconButton
-                sx={{ alignContent: "right" }}
-                onClick={(event) => setCopyPopoverAnchor(event.currentTarget)}
-              >
-                <DoubleArrowIcon />
-              </IconButton>
-            </Tooltip>
             <Tooltip title="Filter expenses per category">
               <IconButton
                 sx={{ alignContent: "right" }}
@@ -237,6 +229,14 @@ const ExpensesTableToolbar = (props) => {
                 {
                   getFilterIcon()
                 }
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Copy recurring expenses to next month">
+              <IconButton
+                sx={{ alignContent: "right" }}
+                onClick={(event) => setCopyPopoverAnchor(event.currentTarget)}
+              >
+                <DoubleArrowIcon />
               </IconButton>
             </Tooltip>
             {
@@ -491,6 +491,7 @@ export default function ExpensesTable(props) {
   const largeScreen = context?.largeScreen;
   const categories = context?.categories.all;
   const [visibility] = context?.visibility;
+  const [searchFocus] = context?.searchFocus;
 
   // States
   const [order, setOrder] = React.useState('asc');
@@ -532,24 +533,26 @@ export default function ExpensesTable(props) {
   const keyL = useKeyPress("l"); // as in 'last'
 
   React.useEffect(() => {
-    if (keyH) {
-      handleChangePage(undefined, 0);
-    }
+    if (!searchFocus) {
+      if (keyH) {
+        handleChangePage(undefined, 0);
+      }
 
-    if (keyJ && page > 0) {
-      handleChangePage(undefined, page - 1);
-    }
+      if (keyJ && page > 0) {
+        handleChangePage(undefined, page - 1);
+      }
 
-    if (keyK && page < pageCount) {
-      handleChangePage(undefined, page + 1);
-    }
+      if (keyK && page < pageCount) {
+        handleChangePage(undefined, page + 1);
+      }
 
-    if (keyL) {
-      handleChangePage(undefined, pageCount);
+      if (keyL) {
+        handleChangePage(undefined, pageCount);
+      }
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [keyH, keyJ, keyK, keyL]);
+  }, [keyH, keyJ, keyK, keyL, searchFocus]);
 
   const StyledTableRow = styled(TableRow)(({ theme: appTheme }) => ({
     '&:nth-of-type(odd)': {
@@ -670,11 +673,6 @@ export default function ExpensesTable(props) {
 
   expensesSum = customlocaleString(expensesSum);
 
-  // TODO: acontece em prod?
-  if ( page > pageCount) {
-    console.log('vai ter warning');
-    // return <div></div>
-  }
 
   return (
     <Box sx={{ width: '100%' }}>
