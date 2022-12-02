@@ -15,6 +15,7 @@ function Search(props) {
   // Context
   const context = React.useContext(AppContext);
   const categories = context?.categories.all;
+  const largeScreen = context?.largeScreen;
 
   // Router
   const router = useRouter();
@@ -146,6 +147,9 @@ function Search(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Title
+  const title = largeScreen.width ? `Search results for: ${expenses.query}` : expenses.query;
+
   return (
     <Container>
       <Box sx={{ my: 2 }}>
@@ -161,7 +165,7 @@ function Search(props) {
               (
                 <ExpensesTable
                   handleAction={handleAction}
-                  title={`Search results for: ${expenses.query}`}
+                  title={title}
                   expenses={expenses.result}
                 />
               )

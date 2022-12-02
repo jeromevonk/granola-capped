@@ -48,7 +48,7 @@ const pages = [
   },
   {
     title: 'Search',
-    url: '/search?query=hotel',
+    url: '/search-mobile',
     onlySmallScreen: true
   },
 ];
