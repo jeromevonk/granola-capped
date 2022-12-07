@@ -9,7 +9,7 @@ export default function SearchMobile() {
 
   const router = useRouter();
 
-  const handleSearch = (event) => {
+  function handleSearch(event) {
     // If user hits enter, perform the search
     if (event.key == 'Enter' && event.target.value.trim() != '') {
       router.push({
