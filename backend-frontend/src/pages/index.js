@@ -273,7 +273,7 @@ function Index(props) {
       <Fab
         color="primary"
         size='medium'
-        onClick={function() {handleAction('new')}}
+        onClick={() => handleAction('new')}
         sx={{
           margin: 0,
           top: 'auto',
