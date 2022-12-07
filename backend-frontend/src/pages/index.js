@@ -7,7 +7,7 @@ import AddIcon from '@mui/icons-material/Add';
 import LinearProgress from '@mui/material/LinearProgress';
 import { useRouter, withRouter } from 'next/router'
 import ExpensesTable from '../components/ExpensesTable';
-import MonthSelector from '../components/MonthSelector';
+import DateSelector from '../components/DateSelector';
 import { expenseService, alertService } from 'src/services';
 import { getCustomDateString, getCategoryTitles, useKeyPress } from 'src/helpers'
 import { AppContext } from 'src/pages/_app';
@@ -245,7 +245,7 @@ function Index(props) {
     <Container maxWidth="xl">
       <Box sx={{ my: 2 }}>
         <Stack spacing={1}>
-          <MonthSelector
+          <DateSelector
             handleChange={handleChange}
             year={selectedDate.year}
             month={selectedDate.month}
