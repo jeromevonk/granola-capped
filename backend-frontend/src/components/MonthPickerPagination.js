@@ -12,6 +12,7 @@ export default function MonthPickerPagination(props) {
       size="small"
       color="primary"
       boundaryCount={6}
+      hidePrevButton hideNextButton
       onChange={(_event, value) => { handleChange('month', value) }}
     />
   );
