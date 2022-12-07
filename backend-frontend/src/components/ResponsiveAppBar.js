@@ -101,7 +101,7 @@ const ResponsiveAppBar = () => {
   // when screen is mobile, user clicks on the menu button
   // and nav menu opens
   // ----------------------------------------------------------
-  const handleOpenNavMenu = (event) => {
+  function handleOpenNavMenu(event) {
     setAnchorElNav(event.currentTarget);
   };
 
@@ -109,7 +109,7 @@ const ResponsiveAppBar = () => {
   // handleOpenUserMenu
   // when user clicks on the avatar and user menu opens
   // ----------------------------------------------------------
-  const handleOpenUserMenu = (event) => {
+  function handleOpenUserMenu(event) {
     setAnchorElUser(event.currentTarget);
   };
 
@@ -119,7 +119,7 @@ const ResponsiveAppBar = () => {
   // - nav menu was open, menu button was clicked to close it
   // - navmenu was open, and an inside item was clicked
   // ----------------------------------------------------------
-  const handleCloseNavMenu = () => {
+  function handleCloseNavMenu() {
     setAnchorElNav(null);
   };
 
@@ -159,7 +159,7 @@ const ResponsiveAppBar = () => {
   // handleSearch
   // handles the searchBar
   // ----------------------------------------------------------
-  const handleSearch = (event) => {
+  function handleSearch(event) {
     // If user hits enter, perform the search
     if (event.key == 'Enter' && event.target.value.trim() != '') {
       router.push({
