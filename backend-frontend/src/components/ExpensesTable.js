@@ -182,18 +182,6 @@ const ExpensesTableToolbar = (props) => {
       <Box sx={{ width: 120 }}>
         {numSelected > 0 ? (
           <Stack direction="row">
-            <Tooltip title={duplicateTooltip}>
-              <span>
-                <IconButton
-                  onClick={() => {
-                    handleAction('duplicate', selected)
-                  }}
-                  disabled={numSelected > 1}
-                >
-                  <ContentCopyIcon />
-                </IconButton>
-              </span>
-            </Tooltip>
             <Tooltip title={editTooltip}>
               <span>
                 <IconButton
@@ -203,6 +191,18 @@ const ExpensesTableToolbar = (props) => {
                   disabled={numSelected > 1}
                 >
                   <EditIcon />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip title={duplicateTooltip}>
+              <span>
+                <IconButton
+                  onClick={() => {
+                    handleAction('duplicate', selected)
+                  }}
+                  disabled={numSelected > 1}
+                >
+                  <ContentCopyIcon />
                 </IconButton>
               </span>
             </Tooltip>
