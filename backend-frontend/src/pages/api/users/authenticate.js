@@ -17,7 +17,7 @@ async function authenticate(req, res) {
   }
 
   // create a jwt token that is valid for 28 days
-  const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET, { expiresIn: '28d' });
+  const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET, { expiresIn: '100d' });
 
   // return basic user details and token
   return res.status(200).json({
