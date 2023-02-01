@@ -534,6 +534,8 @@ export default function ExpensesTable(props) {
   const keyT = useKeyPress("t"); // as in 'toggle'
   const keyD = useKeyPress("d"); // as in 'date'
   const keyS = useKeyPress("s"); // as in 'spent'
+  const keyE = useKeyPress("e"); // as in 'edit'
+  const key2 = useKeyPress("2"); // for 'duplicate'
 
   // -----------------------------------
   // Handlers for page changes
@@ -580,6 +582,29 @@ export default function ExpensesTable(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keyT, keyD, keyS, searchFocus]);
 
+  // -----------------------------------
+  // Handlers for edit and duplicate
+  // -----------------------------------
+  React.useEffect(() => {
+    if (!searchFocus) {
+      if (keyE) {
+        if (selected.length === 1) {
+          props.handleAction('edit', selected);
+        }
+      }
+
+      if (key2) {
+        if (selected.length === 1) {
+          props.handleAction('duplicate', selected);
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keyE, key2, searchFocus]);
+
+  // ----------------------------------------
+  //  Style for table rows
+  // ----------------------------------------
   const StyledTableRow = styled(TableRow)(({ theme: appTheme }) => ({
     '&:nth-of-type(odd)': {
       backgroundColor: appTheme.palette.action.hover,
@@ -590,6 +615,9 @@ export default function ExpensesTable(props) {
     },
   }));
 
+  // ----------------------------------------
+  //  Button handlers
+  // ----------------------------------------
   const handleRequestSort = (_event, property) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
@@ -639,7 +667,6 @@ export default function ExpensesTable(props) {
   const handleChangeOrderBy = (column) => {
     setOrderBy(column);
   };
-
 
 
   const handleChangeRowsPerPage = (event) => {
