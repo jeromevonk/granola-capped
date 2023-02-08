@@ -10,17 +10,5 @@ services:
       - ${HOME}/Volumes/granola-db-data:/var/lib/postgresql/data
     networks:
       - backoffice
-
-  pgadmin:
-    image: dpage/pgadmin4
-    ports: 
-      - 8080:80
-    environment:
-      PGADMIN_DEFAULT_EMAIL: 'user@domain.local'
-      PGADMIN_DEFAULT_PASSWORD: 'banana'
-    depends_on:
-      - db
-    networks:
-      - backoffice
 networks:
   backoffice:
