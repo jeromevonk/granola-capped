@@ -72,18 +72,20 @@ function Search(props) {
       // Find expense (there should be only 1 selected, so use first position of the list)
       const exp = findExpense(selected[0]);
 
-      // Add month and year
-      const parsed = parseDate(exp.date);
-      exp.year = parsed.year;
-      exp.month = parsed.month;
-
       if (action === 'duplicate') {
+        // Do not add year and month, user will probably change it
+
         // Push to new expense page with expense data
         router.push({
           pathname: '/new-expense',
           query: exp,
         }, '/new-expense');
       } else {
+        // Add month and year
+        const parsed = parseDate(exp.date);
+        exp.year = parsed.year;
+        exp.month = parsed.month;
+
         router.push({
           pathname: '/edit-expense',
           query: exp,
