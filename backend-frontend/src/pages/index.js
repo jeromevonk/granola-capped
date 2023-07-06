@@ -137,17 +137,19 @@ function Index(props) {
       // Find expense
       const exp = findExpense(selected[0], selectedDate.year, selectedDate.month);
 
-      // Add month and year
-      exp.year = selectedDate.year;
-      exp.month = selectedDate.month;
-
       if (action === 'duplicate') {
+        // Do not add year and month, user will probably change it
+
         // Push to new expense page with expense data
         router.push({
           pathname: '/new-expense',
           query: exp,
         }, '/new-expense');
       } else {
+        // Add month and year
+        exp.year = selectedDate.year;
+        exp.month = selectedDate.month;
+
         router.push({
           pathname: '/edit-expense',
           query: exp,
