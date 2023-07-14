@@ -17,7 +17,7 @@ function Index(props) {
   const context = React.useContext(AppContext);
   const categories = context?.categories.all;
   const largeScreen = context?.largeScreen;
-  const [searchFocus] = context?.searchFocus;
+  const [searchFocus] = context?.searchFocus || false;
 
   // Router
   const router = useRouter();
