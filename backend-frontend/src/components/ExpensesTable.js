@@ -853,8 +853,8 @@ export default function ExpensesTable(props) {
           page={page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
-          showFirstButton={largeScreen.width ? true : false}
-          showLastButton={largeScreen.width ? true : false}
+          showFirstButton={!!largeScreen.width}
+          showLastButton={!!largeScreen.width}
           labelRowsPerPage='Rows:'
         />
       </Paper>

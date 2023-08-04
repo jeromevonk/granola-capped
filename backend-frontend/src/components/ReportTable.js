@@ -109,7 +109,7 @@ export default function ReportTable(props) {
   // Context
   const context = React.useContext(AppContext);
   const largeScreen = context?.largeScreen;
-  const [visibility] = context?.visibility;
+  const [visibility] = context?.visibility; // fallback to [visibility, setVisibility] ?
 
   // States
   const [order, setOrder] = React.useState('desc');
