@@ -60,8 +60,8 @@ const settings = [
 const ResponsiveAppBar = () => {
   // Context
   const context = React.useContext(AppContext);
-  const [visibility, setVisibility] = context?.visibility;
-  const {1: setSearchFocus} = context?.searchFocus;
+  const [visibility, setVisibility] = context?.visibility || false;
+  const {1: setSearchFocus} = context?.searchFocus || false;
   const setCategories = context?.categories.setCategories;
 
   // States

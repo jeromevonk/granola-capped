@@ -490,8 +490,8 @@ export default function ExpensesTable(props) {
   const context = React.useContext(AppContext);
   const largeScreen = context?.largeScreen;
   const categories = context?.categories.all;
-  const [visibility] = context?.visibility;
-  const [searchFocus] = context?.searchFocus;
+  const [visibility] = context?.visibility || false;
+  const [searchFocus] = context?.searchFocus || false;
 
   // States
   const [order, setOrder] = React.useState('asc');

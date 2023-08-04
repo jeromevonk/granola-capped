@@ -244,7 +244,10 @@ function Index(props) {
   }, [selectedDate.year, categories]);
 
   return (
-    <Container maxWidth="xl">
+    <Container 
+      maxWidth="xl"
+      sx={{ paddingLeft: '12px', paddingRight: '12px' }}
+    >
       <Box sx={{ my: 2 }}>
         <Stack spacing={1}>
           <DateSelector
