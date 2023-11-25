@@ -494,7 +494,7 @@ export default function ExpensesTable(props) {
   const [searchFocus] = context?.searchFocus || false;
 
   // States
-  const [order, setOrder] = React.useState('asc');
+  const [order, setOrder] = React.useState(props.order || 'asc');
   const [orderBy, setOrderBy] = React.useState('date');
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
@@ -867,4 +867,5 @@ ExpensesTable.propTypes = {
   title: PropTypes.string.isRequired,
   expenses: PropTypes.array,
   filter: PropTypes.object,
+  order: PropTypes.string.isRequired,
 };

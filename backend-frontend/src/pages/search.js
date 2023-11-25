@@ -169,6 +169,7 @@ function Search(props) {
                   handleAction={handleAction}
                   title={title}
                   expenses={expenses.result}
+                  order="desc"
                 />
               )
           }
