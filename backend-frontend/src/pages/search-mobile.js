@@ -14,7 +14,7 @@ export default function SearchMobile() {
     if (event.key == 'Enter' && event.target.value.trim() != '') {
       router.push({
         pathname: '/search',
-        query: { query: event.target.value },
+        query: { query: event.target.value.trim() },
       });
     }
   };
