@@ -804,7 +804,7 @@ export default function ExpensesTable(props) {
                       {
                         // Description
                       }
-                      <CustomWidthTooltip title={`Category:${row.mainCategoryText} Subcategory:${row.subCategoryText} ${row.recurring ? 'Recurring' : ''}`}>
+                      <CustomWidthTooltip title={`Category: ${row.mainCategoryText} Subcategory:${row.subCategoryText} ${row.recurring ? 'Recurring' : ''}`}>
                         <TableCell
                           align="left"
                           style={{
