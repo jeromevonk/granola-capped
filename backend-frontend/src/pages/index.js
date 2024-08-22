@@ -1,4 +1,5 @@
 import * as React from 'react';
+import PropTypes from 'prop-types';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -105,6 +106,10 @@ function Index(props) {
     return expenses[year][month].find(item => item.id === target);
   }
 
+  const filterNotDeleted = (arr, response) => {
+    return arr.filter(item => !response.deleted.includes(item.id))
+  }
+
   // -------------------------------------------
   // Handler
   // -------------------------------------------
@@ -116,7 +121,7 @@ function Index(props) {
             prev => {
               // Narrow the search by providing year and month
               // Filter the ones not deleted
-              const newArray = prev[selectedDate.year][selectedDate.month].filter(item => !response.deleted.includes(item.id));
+              const newArray = filterNotDeleted(prev[selectedDate.year][selectedDate.month], response);
               prev[selectedDate.year][selectedDate.month] = newArray;
 
               return {
@@ -267,7 +272,7 @@ function Index(props) {
                 <ExpensesTable
                   handleAction={handleAction}
                   title={getCustomDateString(selectedDate.year, selectedDate.month, largeScreen.width)}
-                  expenses={expenses[selectedDate.year] && expenses[selectedDate.year][selectedDate.month]}
+                  expenses={expenses[selectedDate.year]?.[selectedDate.month]}
                   filter={initialFilter}
                 />
               )
@@ -295,3 +300,7 @@ function Index(props) {
 }
 
 export default withRouter(Index)
+
+Index.propTypes = {
+  router: PropTypes.object,
+};
