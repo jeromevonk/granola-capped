@@ -40,7 +40,7 @@ export default function Evolution() {
   // Auxiliar functions for managing state
   // -----------------------------------------------
   const hasData = (dateType, categoryKey, dataObj) => {
-    return dataObj[dateType] && dataObj[dateType][categoryKey];
+    return dataObj[dateType]?.[categoryKey];
   }
 
   const addDataToState = (dateType, categoryType, categoryNumber, data) => {

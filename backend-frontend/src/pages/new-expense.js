@@ -1,4 +1,5 @@
 import * as React from 'react';
+import PropTypes from 'prop-types';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import { withRouter } from 'next/router'
@@ -21,3 +22,7 @@ function NewExpense(props) {
 }
 
 export default withRouter(NewExpense)
+
+NewExpense.propTypes = {
+  router: PropTypes.object,
+};

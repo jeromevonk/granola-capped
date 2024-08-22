@@ -22,6 +22,16 @@ function CustomAlert({ id }) {
   const [alerts, setAlerts] = React.useState([]);
   const [open, setOpen] = React.useState(true);
 
+  const clearEmtpyAlerts = () => {
+    setAlerts(currentAlerts => {
+      // filter out alerts without 'keepAfterRouteChange' flag
+      const filteredAlerts = currentAlerts.filter(x => x.keepAfterRouteChange);
+
+      // set 'keepAfterRouteChange' flag to false on the rest
+      filteredAlerts.forEach(x => delete x.keepAfterRouteChange);
+      return filteredAlerts;
+    });
+  }
 
   React.useEffect(() => {
     // subscribe to new alert notifications
@@ -29,14 +39,7 @@ function CustomAlert({ id }) {
       .subscribe(alert => {
         // clear alerts when an empty alert is received
         if (!alert.message) {
-          setAlerts(currentAlerts => {
-            // filter out alerts without 'keepAfterRouteChange' flag
-            const filteredAlerts = currentAlerts.filter(x => x.keepAfterRouteChange);
-
-            // set 'keepAfterRouteChange' flag to false on the rest
-            filteredAlerts.forEach(x => delete x.keepAfterRouteChange);
-            return filteredAlerts;
-          });
+          clearEmtpyAlerts()
         } else {
           // add alert to array
           setAlerts(currentAlerts => ([...currentAlerts, alert]));
@@ -80,16 +83,14 @@ function CustomAlert({ id }) {
   };
 
   const action = (
-    <React.Fragment>
-      <IconButton
-        size="small"
-        aria-label="close"
-        color="inherit"
-        onClick={handleClose}
-      >
-        <CloseIcon fontSize="small" />
-      </IconButton>
-    </React.Fragment>
+    <IconButton
+      size="small"
+      aria-label="close"
+      color="inherit"
+      onClick={handleClose}
+    >
+      <CloseIcon fontSize="small" />
+    </IconButton>
   );
 
   // Current limitation: will only show the first alert on list

@@ -58,7 +58,7 @@ export default function SearchBar(props) {
       <StyledInputBase
         placeholder="Search…"
         inputProps={{ 'aria-label': 'search', spellCheck: 'false' }}
-        onKeyPress={handleSearch}
+        onKeyDown={handleSearch}
         onFocus={(e) => {
           setSearchFocus(true);
         }}

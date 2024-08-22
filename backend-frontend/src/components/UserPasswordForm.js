@@ -54,7 +54,7 @@ export default function UserPasswordForm(props) {
               label="Username"
               name="username"
               autoFocus
-              error={errors.username ? true : false}
+              error={errors.username}
               helperText={errors.username?.message}
               {...register('username')}
             />
@@ -67,7 +67,7 @@ export default function UserPasswordForm(props) {
               type={showPassword ? "text" : "password"}
               id="password"
               autoComplete="current-password"
-              error={errors.password ? true : false}
+              error={errors.password}
               helperText={errors.password?.message}
               {...register('password')}
               InputProps={{ // <-- This is where the toggle button is added.

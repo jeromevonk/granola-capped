@@ -6,7 +6,11 @@ import Box from '@mui/material/Box';
 
 export default function EvolutionChart({ data, options, evolutionCategory, eventCallback = () => ({}) }) {
   if (data.length === 0) {
-    return ('Loading...')
+    return (
+      <Box>
+        'Loading...'
+      </Box>
+    )
   } else if (data.length === 1) {
     return (
       <Box sx={{

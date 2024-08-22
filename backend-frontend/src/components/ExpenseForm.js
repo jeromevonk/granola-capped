@@ -184,7 +184,7 @@ export default function ExpenseForm(props) {
                 max: "2050-01-01",
                 min: "2012-01-01"
               }}
-              error={errors.date ? true : false}
+              error={errors.date}
               helperText={errors.date?.message}
               {...register('date')}
             />
@@ -196,7 +196,7 @@ export default function ExpenseForm(props) {
                   control={
                     <Checkbox 
                       size="small"
-                      defaultChecked={expense.day === "" ? true : false}
+                      defaultChecked={expense.day === ""}
                       
                       {...register('ignoreDay')}
                     />
@@ -224,7 +224,7 @@ export default function ExpenseForm(props) {
                 defaultValue={expense.description || ""}
                 inputProps={{ maxLength: 70 }}
                 sx={{ width: 230 }}
-                error={errors.description ? true : false}
+                error={errors.description}
                 helperText={errors.description?.message}
                 {...register('description')}
               />
@@ -258,7 +258,7 @@ export default function ExpenseForm(props) {
               defaultValue={expense.amountPaid || ""}
               inputProps={{ inputMode: 'numeric' }}
               sx={{ width: 230 }}
-              error={errors.amountPaid ? true : false}
+              error={errors.amountPaid}
               helperText={errors.amountPaid?.message}
               {...register('amountPaid')}
             />
@@ -270,7 +270,7 @@ export default function ExpenseForm(props) {
               defaultValue={expense.amountReimbursed || "0"}
               inputProps={{ inputMode: 'numeric' }}
               sx={{ width: 230 }}
-              error={errors.amountReimbursed ? true : false}
+              error={errors.amountReimbursed}
               helperText={errors.amountReimbursed?.message}
               {...register('amountReimbursed')}
             />
@@ -309,7 +309,7 @@ export default function ExpenseForm(props) {
                 name="subCategory"
                 label="Sub-category"
                 value={formData.subCategory}
-                error={errors.subCategory ? true : false}
+                error={errors.subCategory}
                 {...register('subCategory')}
                 onChange={handleChange}
               >
@@ -335,7 +335,7 @@ export default function ExpenseForm(props) {
                 label="Recurring"
                 control={
                   <Checkbox {...register('recurring')} defaultChecked={
-                    expense.recurring === "true" ? true : false
+                    expense.recurring === "true"
                   } />
                 }
               />

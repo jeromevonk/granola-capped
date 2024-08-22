@@ -33,15 +33,12 @@ export default function CategorySelector(props) {
               // Set state
               const { value } = event.target;
 
-              // If it's main categories or sub-categories, simply call the handler
-              // with value from the Radio button
+              // If it's main categories or sub-categories, simply call the handler with value from the Radio button
               if (value !== 'detailed') {
                 handleChange('type', value);
-              } else {
+              } else if (category !== '') {
                 // If it's 'detailed', call the handler with selected category
-                if (category !== '') {
-                  handleChange('type', category.toString());
-                }
+                handleChange('type', category.toString());
               }
             }
           }

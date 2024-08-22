@@ -374,9 +374,11 @@ ExpensesTableToolbar.propTypes = {
   title: PropTypes.string.isRequired,
   handleAction: PropTypes.func.isRequired,
   setSelected: PropTypes.func.isRequired,
+  filter: PropTypes.object.isRequired,
   setFilter: PropTypes.func.isRequired,
   expensesSum: PropTypes.string.isRequired,
   filterable: PropTypes.object.isRequired,
+  largeScreen: PropTypes.object.isRequired,
 };
 
 function ExpensesTableHead(props) {

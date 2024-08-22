@@ -1,4 +1,5 @@
 import * as React from 'react';
+import PropTypes from 'prop-types';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -180,3 +181,7 @@ function Search(props) {
 }
 
 export default withRouter(Search)
+
+Search.propTypes = {
+  router: PropTypes.object,
+};

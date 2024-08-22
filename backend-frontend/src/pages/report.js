@@ -48,10 +48,10 @@ export default function Report() {
   const makeTitle = ({ year, type }) => {
 
     if (type === 'mainCategory') {
-      return `Sum of expenses by category in ${year}`;
+      return <span>Sum of expenses by category in ${year}</span>;
     }
     else if (type === 'subCategory') {
-      return `Sum of expenses by sub-category in ${year}`;
+      return <span>Sum of expenses by sub-category in ${year}</span>;
     }
     else {
       return <span>Sum of expenses by sub-category of <i>{getCategoryTitles(categories, Number(type)).categoryTitle}</i> in {year}</span>;
@@ -63,7 +63,7 @@ export default function Report() {
   // Auxiliar functions for managing state
   // -----------------------------------------------
   const hasData = (year, type, dataObj) => {
-    return dataObj[year] && dataObj[year][type];
+    return dataObj[year]?.[type];
   }
 
   const addDataToState = (year, type, values, numMonths) => {
