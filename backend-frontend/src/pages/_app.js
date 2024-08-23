@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import PropTypes from 'prop-types';
 import Head from 'next/head';
@@ -137,6 +137,24 @@ export default function MyApp(props) {
     }
   }
 
+  // Memoizing
+  const memoized = useMemo(() => ({
+    largeScreen,
+    categories: {
+      all: categories?.all || [],
+      mainCategories: categories?.mainCategories || [],
+      setCategories: setCategories
+    },
+    visibility: [
+      visibility,
+      setVisibility
+    ],
+    searchFocus: [
+      searchFocus,
+      setSearchFocus
+    ]
+  }), [largeScreen, categories, visibility, searchFocus]);
+
   return (
     <CacheProvider value={emotionCache}>
       <Head>
@@ -146,22 +164,7 @@ export default function MyApp(props) {
       <ThemeProvider theme={theme}>
         {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
         <CssBaseline />
-        <AppContext.Provider value={{
-          largeScreen,
-          categories: {
-            all: categories?.all || [],
-            mainCategories: categories?.mainCategories || [],
-            setCategories: setCategories
-          },
-          visibility: [
-            visibility,
-            setVisibility
-          ],
-          searchFocus: [
-            searchFocus, 
-            setSearchFocus
-          ]
-        }}>
+        <AppContext.Provider value={memoized}>
           <div>
             <ResponsiveAppBar />
             <CustomAlert />
