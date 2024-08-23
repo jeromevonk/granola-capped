@@ -1,7 +1,6 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
+import { Container, Typography } from '@mui/material/Container';
 import { withRouter } from 'next/router'
 import ExpenseForm from '../components/ExpenseForm';
 

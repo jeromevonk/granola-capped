@@ -1,11 +1,7 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import Container from '@mui/material/Container';
-import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
-import Fab from '@mui/material/Fab';
+import { Container, Box, Stack, Fab, LinearProgress } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import LinearProgress from '@mui/material/LinearProgress';
 import { useRouter, withRouter } from 'next/router'
 import ExpensesTable from '../components/ExpensesTable';
 import DateSelector from '../components/DateSelector';

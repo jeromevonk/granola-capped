@@ -1,9 +1,6 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import Container from '@mui/material/Container';
-import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
-import LinearProgress from '@mui/material/LinearProgress';
+import { Container, Box, Stack, LinearProgress } from '@mui/material';
 import { useRouter, withRouter } from 'next/router'
 import ExpensesTable from '../components/ExpensesTable';
 import { expenseService, alertService } from 'src/services';
@@ -52,6 +49,10 @@ function Search(props) {
     return formatted;
   }
 
+  const filterNotDeleted = (arr, response) => {
+    return arr.filter(item => !response.deleted.includes(item.id))
+  }
+
   // -------------------------------------------
   // Handler
   // -------------------------------------------
@@ -61,7 +62,7 @@ function Search(props) {
         .then((response) => {
           setExpenses(prev => ({
             ...prev,
-            result: prev.result.filter(item => !response.deleted.includes(item.id))
+            result: filterNotDeleted(prev.result, response)
           }));
 
           return response;

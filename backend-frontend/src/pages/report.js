@@ -1,9 +1,5 @@
 import * as React from 'react';
-import Container from '@mui/material/Container';
-import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import LinearProgress from '@mui/material/LinearProgress';
+import { Container, Box, Stack, Typography, LinearProgress } from '@mui/material';
 import ReportTable from '../components/ReportTable';
 import { statsService, alertService } from 'src/services';
 import YearPicker from '../components/YearPicker';
@@ -132,6 +128,21 @@ export default function Report() {
     return { grouped: year, numMonths };
   }
 
+  const getAvailableCategories = (grouped) => {
+    return grouped
+      .reduce((prev, current) => {
+        const id = current.category;
+        const title = getCategoryTitles(categories, id).categoryTitle;
+
+        if (!prev.find(item => item.id === id)) {
+          // Add current to array
+          prev.push({ id, title })
+        }
+
+        return prev;
+      }, []);
+  }
+
   // ------------------------------------
   // Get data via API
   // ------------------------------------
@@ -159,18 +170,7 @@ export default function Report() {
           // get the categories with non-zero sum
           // --------------------------------------------------------------------------
           if (selectedOptions.type === 'mainCategory') {
-            let availableCategories = grouped
-              .reduce((prev, current) => {
-                const id = current.category;
-                const title = getCategoryTitles(categories, id).categoryTitle;
-
-                if (!prev.find(item => item.id === id)) {
-                  // Add current to array
-                  prev.push({ id, title })
-                }
-
-                return prev;
-              }, []);
+            const availableCategories = getAvailableCategories(grouped);
 
             // Sort and set state
             availableCategories.sort(sortTitleAlphabetically);
