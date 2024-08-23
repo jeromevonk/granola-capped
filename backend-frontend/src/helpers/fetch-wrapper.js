@@ -63,7 +63,7 @@ function _delete(url, body) {
 function authHeader(url) {
   // return auth header with jwt if user is logged in and request is to the api url
   const user = userService.userValue;
-  const isLoggedIn = user && user.token;
+  const isLoggedIn = user?.token;
   const isApiUrl = url.startsWith(publicRuntimeConfig.apiUrl);
   if (isLoggedIn && isApiUrl) {
     return { Authorization: `Bearer ${user.token}` };
@@ -81,9 +81,8 @@ function handleResponse(response) {
         // auto logout if 401 Unauthorized or 403 Forbidden response returned from api
         userService.logout();
       }
-
-      const error = (data && data.message) || response.statusText;
-      return Promise.reject(error);
+      
+      return Promise.reject(new Error((data?.message) || response.statusText));
     }
 
     return data;
