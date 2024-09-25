@@ -13,9 +13,6 @@ CustomAlert.propTypes = {
   id: PropTypes.string,
 };
 
-CustomAlert.defaultProps = {
-  id: 'default-alert',
-};
 
 function CustomAlert({ id }) {
   const router = useRouter();

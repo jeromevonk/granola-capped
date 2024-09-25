@@ -8,7 +8,3 @@ services:
       POSTGRES_PASSWORD: 'my_postgresql_password'
     volumes:
       - ${HOME}/Volumes/granola-db-data:/var/lib/postgresql/data
-    networks:
-      - backoffice
-networks:
-  backoffice:
