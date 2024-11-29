@@ -46,8 +46,6 @@ AYR3SPIV//EpnAFZ1fMRCON9nStuzOUELiTRC9Mt2+bzdatU368umk6QUs3vHpuS
 z5Lb7+98JfTIywEuMfDfT3dksdw7epKiIYbpmWBM8B2IFJA7WA==
 -----END CERTIFICATE-----
 `
-
-
 // ---------------------------------------
 // Database connection config
 // ---------------------------------------
@@ -62,6 +60,11 @@ const config = {
   }
 }
 
+// --------------------------------------------
+// For local development, remove the SLL config
+// But if testing locally with production DB
+// comment out the code
+// --------------------------------------------
 if (process.env.NODE_ENV == 'development') {
   delete config.connection.ssl;
 }
