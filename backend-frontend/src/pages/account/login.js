@@ -27,7 +27,7 @@ export default function Login() {
         router.push(returnUrl);
       })
       .catch((err => {
-        alertService.error(err);
+        alertService.error(err.message);
       }));
   }
 

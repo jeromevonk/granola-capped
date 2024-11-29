@@ -851,5 +851,5 @@ ExpensesTable.propTypes = {
   title: PropTypes.string.isRequired,
   expenses: PropTypes.array,
   filter: PropTypes.object,
-  order: PropTypes.string.isRequired,
+  order: PropTypes.string,
 };

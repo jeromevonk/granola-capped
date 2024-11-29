@@ -19,11 +19,56 @@ export const postgresqlRepo = {
   getSubCategoryReportByYear,
 };
 
-const knex = require('knex')({
-  client: 'pg',
-  connection: process.env.PG_CONNECTION_STRING,
-});
+const AIVEN_CA_CERT = `
+-----BEGIN CERTIFICATE-----
+MIIEQTCCAqmgAwIBAgIUQV1M8z8RnEni4Od3sSYa31lFsB4wDQYJKoZIhvcNAQEM
+BQAwOjE4MDYGA1UEAwwvZDEwOGQ1YmYtY2Q5MS00ZDRmLThhYzMtNWRjYzM2Zjcx
+OGYyIFByb2plY3QgQ0EwHhcNMjQwOTEyMTgxNTE1WhcNMzQwOTEwMTgxNTE1WjA6
+MTgwNgYDVQQDDC9kMTA4ZDViZi1jZDkxLTRkNGYtOGFjMy01ZGNjMzZmNzE4ZjIg
+UHJvamVjdCBDQTCCAaIwDQYJKoZIhvcNAQEBBQADggGPADCCAYoCggGBAKCg35Gf
+evlqr8H63hPOnkGCSvlVnR7JGVKtAD+HPgMBl1sOofdJ7NqGDdcTyuwTVhhCo5Jb
+ZbzPvD5FtdQhyl5r4ZV/gd4VBgIOk7Qsl+lFXAcge6+US7frGmTL634B/JyAnILW
+tQcq1OI5rjClCEP/QO52w25urjqvC2vFBIbdPkLqMnL9jOWjbmcSRD8/PdOR29wL
+6jypq93XjTOiBYUBD6lm5WWHWZFgFCcKOztJ3JqhDu45/Vn0W5oQRzSX4cWXLWO2
+N57syeDsceXhit8zcEdQXmC6DIKf5h/cgUnFdO+jrmAo+8h/JbsFffwvmomwxWo7
+TQujJyT1LVMYWO+3SE3LVNQRGOmrAlHTG4A7Jmq90Dq33em806rFwxWFGJChy0j2
+7Z9VckiopudGzDZ4jkwONPU0jwZTtSuI2xKkNRmrtO/3Ih8WGUYCNEL+mWa+eaJD
+O10AB6qFj6mllZ2p3aj5hLrNT7W6FYyzPwjX8ZvyJjNOoG0k1rp1zLeQxwIDAQAB
+oz8wPTAdBgNVHQ4EFgQU6fQkggz3NqBSSldoxsquLESXgoEwDwYDVR0TBAgwBgEB
+/wIBADALBgNVHQ8EBAMCAQYwDQYJKoZIhvcNAQEMBQADggGBAEPqmPDwlSSEqxt6
+voQi18ciD2oG7WM0WFOZvtYxFQsLbI3YkSZvAVZu5GUicmbDh9iIF2NH/1xMvUww
+wl6uJxXf7oAefmyFLRpkTbWyh3jrETPLy4aAXgO3EaFeNgVTTPWoUj92qg78Ywad
+50IfNNVqGDfk/e6rlU2q4Qj961PzJu8xY7FXhPPKMS0htJVc4mHwoCp2MDTGUiOT
+M2UVb9WzAshnZgiBNHNxbEG/2g4ZvNPV0LrgRhmXbqiIC8JXXSaJYvw+rRwEdKeY
+SB3AXNscpY8MhRmB35ojejzuea8t6nP8uyLTEjqpOxE7ZawkiO1LQffoz+6tlXl2
+AYR3SPIV//EpnAFZ1fMRCON9nStuzOUELiTRC9Mt2+bzdatU368umk6QUs3vHpuS
+5XvFEMAn6yXzO4gNqzLE7iR+ryhIYUI1V+Ene35EtgTfdMOiA3DWUJ6Abrum7xBy
+z5Lb7+98JfTIywEuMfDfT3dksdw7epKiIYbpmWBM8B2IFJA7WA==
+-----END CERTIFICATE-----
+`
 
+
+// ---------------------------------------
+// Database connection config
+// ---------------------------------------
+const config = {
+  client: 'pg',
+  connection: {
+    connectionString: process.env.PG_CONNECTION_STRING,
+    ssl: {
+      rejectUnauthorized: true,
+      ca: AIVEN_CA_CERT
+    }
+  }
+}
+
+if (process.env.NODE_ENV == 'development') {
+  delete config.connection.ssl;
+}
+
+const knex = require('knex')(config);
+
+// Get current year
 const CURRENT_YEAR = new Date().getFullYear();
 
 // ------------------------------------------
