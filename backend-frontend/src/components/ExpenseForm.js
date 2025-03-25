@@ -217,7 +217,7 @@ export default function ExpenseForm(props) {
               <TextField
                 variant="standard"
                 margin="normal"
-                autoFocus
+                autoFocus={!expense.description} // autofocus if description is empty
                 required
                 id="description"
                 label="Description"
@@ -252,6 +252,7 @@ export default function ExpenseForm(props) {
             <TextField
               variant="standard"
               margin="normal"
+              autoFocus={expense.description} // Autofocus if description already filled
               required
               id="amountPaid"
               label="Amount paid"
