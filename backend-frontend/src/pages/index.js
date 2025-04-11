@@ -2,6 +2,7 @@ import * as React from 'react';
 import PropTypes from 'prop-types';
 import { Container, Box, Stack, Fab, LinearProgress } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import SearchIcon from '@mui/icons-material/Search';
 import { useRouter, withRouter } from 'next/router'
 import ExpensesTable from '../components/ExpensesTable';
 import DateSelector from '../components/DateSelector';
@@ -131,9 +132,6 @@ function Index(props) {
           alertService.success(`${response.deleted.length} expense(s) deleted, ${response.failed.length} failed`);
         })
         .catch(err => alertService.error(`API error: ${err}`));
-    } else if (action === 'new') {
-      // Push to new expense page with no data
-      router.push({ pathname: '/new-expense' });
     } else if (action === 'edit' || action === 'duplicate') {
       // Find expense
       const exp = findExpense(selected[0], selectedDate.year, selectedDate.month);
@@ -245,7 +243,7 @@ function Index(props) {
   }, [selectedDate.year, categories]);
 
   return (
-    <Container 
+    <Container
       maxWidth="xl"
       sx={{ paddingLeft: '12px', paddingRight: '12px' }}
     >
@@ -275,11 +273,11 @@ function Index(props) {
           }
         </Stack>
       </Box>
-      {/* Floating action button */}
+      {/* Floating action button - new expense */}
       <Fab
         color="primary"
-        size='medium'
-        onClick={() => handleAction('new')}
+        size='small'
+        onClick={() => router.push({ pathname: '/new-expense' })}
         sx={{
           margin: 0,
           top: 'auto',
@@ -291,6 +289,25 @@ function Index(props) {
       >
         <AddIcon />
       </Fab>
+      {
+        // Only show the search icon on mobile
+        !largeScreen.width &&
+        <Fab
+          color="primary"
+          size='small'
+          onClick={() => router.push({ pathname: '/search-mobile' })}
+          sx={{
+            margin: 0,
+            top: 'auto',
+            right: 20,
+            bottom: 20,
+            left: 'auto',
+            position: 'fixed',
+          }}
+        >
+          <SearchIcon />
+        </Fab>
+      }
     </Container>
   );
 }
