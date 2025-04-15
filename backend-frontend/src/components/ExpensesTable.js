@@ -34,7 +34,7 @@ const getTotalString = (expensesSum, largeScreen, numSelected) => {
   if (largeScreen.width) {
     totalStr = numSelected > 0 ? `Selected total: $ ${expensesSum}` : `Total: $ ${expensesSum}`;
   } else {
-    totalStr = `Total: ${expensesSum}`
+    totalStr = `R$ ${expensesSum}`
   }
 
   return totalStr;

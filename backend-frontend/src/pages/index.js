@@ -309,7 +309,7 @@ function Index(props) {
             <SearchIcon />
           </Fab>
         { /* Add some blank space at the bottom, so user can scroll and search icon gives space to table pagination */}
-          <Box sx={{ height: 20 }} />
+          <Box sx={{ height: 25 }} />
         </Container>
       }
     </Container>
