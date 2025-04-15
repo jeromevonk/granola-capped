@@ -292,21 +292,25 @@ function Index(props) {
       {
         // Only show the search icon on mobile
         !largeScreen.width &&
-        <Fab
-          color="primary"
-          size='small'
-          onClick={() => router.push({ pathname: '/search-mobile' })}
-          sx={{
-            margin: 0,
-            top: 'auto',
-            right: 20,
-            bottom: 20,
-            left: 'auto',
-            position: 'fixed',
-          }}
-        >
-          <SearchIcon />
-        </Fab>
+        <Container>
+          <Fab
+            color="primary"
+            size='small'
+            onClick={() => router.push({ pathname: '/search-mobile' })}
+            sx={{
+              margin: 0,
+              top: 'auto',
+              right: 20,
+              bottom: 20,
+              left: 'auto',
+              position: 'fixed',
+            }}
+          >
+            <SearchIcon />
+          </Fab>
+        { /* Add some blank space at the bottom, so user can scroll and search icon gives space to table pagination */}
+          <Box sx={{ height: 20 }} />
+        </Container>
       }
     </Container>
   );
