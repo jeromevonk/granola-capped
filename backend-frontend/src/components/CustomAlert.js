@@ -41,11 +41,6 @@ function CustomAlert({ id }) {
           // add alert to array
           setAlerts(currentAlerts => ([...currentAlerts, alert]));
           setOpen(true);
-
-          // auto close alert if required
-          if (alert.autoClose) {
-            setTimeout(() => removeAlert(alert), 1500);
-          }
         }
       });
 
@@ -95,7 +90,7 @@ function CustomAlert({ id }) {
     <div>
       <Snackbar
         open={open}
-        autoHideDuration={1500}
+        autoHideDuration={900}
         onClose={handleClose}
         message={alerts[0].message}
         action={action}
