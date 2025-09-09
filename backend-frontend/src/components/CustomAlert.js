@@ -60,10 +60,6 @@ function CustomAlert({ id }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function removeAlert(alert) {
-    setAlerts(currentAlerts => currentAlerts.filter(x => x !== alert));
-  }
-
   if (!alerts.length) return null;
 
   const handleClose = (_event, reason) => {
