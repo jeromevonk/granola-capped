@@ -86,7 +86,7 @@ function CustomAlert({ id }) {
     <div>
       <Snackbar
         open={open}
-        autoHideDuration={900}
+        autoHideDuration={850}
         onClose={handleClose}
         message={alerts[0].message}
         action={action}
