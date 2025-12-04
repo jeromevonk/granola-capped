@@ -179,7 +179,7 @@ function Index(props) {
             // and the next year might not be showing in the year picker.
             // A hack to fix this is to reload the whole page and let the
             // user and effects do their job.
-            router.reload(window.location.pathname);
+            router.reload(globalThis.location.pathname);
 
             return;
           }
