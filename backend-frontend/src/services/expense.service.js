@@ -1,8 +1,6 @@
-import getConfig from 'next/config';
 import { fetchWrapper } from 'src/helpers';
 
-const { publicRuntimeConfig } = getConfig();
-const baseUrl = `${publicRuntimeConfig.apiUrl}/expenses`;
+const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/expenses`;
 
 export const expenseService = {
   createNewExpense,

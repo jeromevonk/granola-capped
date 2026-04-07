@@ -1,8 +1,6 @@
-import getConfig from 'next/config';
 import { fetchWrapper } from 'src/helpers';
 
-const { publicRuntimeConfig } = getConfig();
-const baseUrl = `${publicRuntimeConfig.apiUrl}/stats`;
+const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/stats`;
 
 export const statsService = {
   getEvolutionPerYear,

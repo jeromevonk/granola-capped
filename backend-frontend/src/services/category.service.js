@@ -1,8 +1,6 @@
-import getConfig from 'next/config';
 import { fetchWrapper, getMainCategories } from 'src/helpers';
 
-const { publicRuntimeConfig } = getConfig();
-const baseUrl = `${publicRuntimeConfig.apiUrl}/categories`;
+const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/categories`;
 
 export const categoryService = {
   getCategories,
