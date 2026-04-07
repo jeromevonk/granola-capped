@@ -9,6 +9,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Typography from '@mui/material/Typography';
 import Checkbox from '@mui/material/Checkbox';
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
@@ -94,20 +95,23 @@ export default function ExpenseForm(props) {
       recurring: data.recurring
     };
 
+    setIsSubmitting(true);
     if (action === 'create') {
       return expenseService.createNewExpense(exp)
         .then(() => {
           alertService.success('Expense created', { keepAfterRouteChange: true });
           router.push('/');
         })
-        .catch((err => alertService.error(err)));
+        .catch((err => alertService.error(err)))
+        .finally(() => setIsSubmitting(false));
     } else if (action === 'edit') {
       return expenseService.editExpense(expenseId, exp)
         .then(() => {
           alertService.success('Expense edited', { keepAfterRouteChange: true });
           router.push('/');
         })
-        .catch((err => alertService.error(err)));
+        .catch((err => alertService.error(err)))
+        .finally(() => setIsSubmitting(false));
     }
   }
 
@@ -118,6 +122,7 @@ export default function ExpenseForm(props) {
 
   // States
   const [formData, setFormData] = React.useState(getInitialFormData(expense, categories));
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   // Categories and sub-categories
   const mainCategories = context?.categories.mainCategories;
@@ -347,9 +352,13 @@ export default function ExpenseForm(props) {
           type="submit"
           fullWidth
           variant="contained"
+          disabled={isSubmitting}
+          startIcon={isSubmitting ? <CircularProgress size={18} color="inherit" /> : null}
           sx={{ mt: 3, mb: 2 }}
         >
-          {action === 'create' ? 'Create' : 'Save'}
+          {action === 'create'
+            ? (isSubmitting ? 'Creating...' : 'Create')
+            : (isSubmitting ? 'Saving...' : 'Save')}
         </Button>
       </Box>
     </Container>
