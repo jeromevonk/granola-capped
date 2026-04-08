@@ -38,8 +38,8 @@ function CustomAlert({ id }) {
         if (!alert.message) {
           clearEmtpyAlerts()
         } else {
-          // add alert to array
-          setAlerts(currentAlerts => ([...currentAlerts, alert]));
+          // replace with the latest alert so a new action always supersedes a stale one
+          setAlerts([alert]);
           setOpen(true);
         }
       });
