@@ -30,10 +30,10 @@ CREATE TABLE IF NOT EXISTS public.expense
 
 TABLESPACE pg_default;
 
--- Index: year
-CREATE INDEX IF NOT EXISTS year
+-- Index: user_id + year (composite index for most common queries)
+CREATE INDEX IF NOT EXISTS idx_expense_user_year
     ON public.expense USING btree
-    (year ASC NULLS LAST)
+    (user_id ASC, year ASC NULLS LAST)
     TABLESPACE pg_default;
 
 -- Trigger
