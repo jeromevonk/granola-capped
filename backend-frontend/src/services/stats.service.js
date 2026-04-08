@@ -25,7 +25,7 @@ function getCategoryReportByYear(startYear, endYear, reportType) {
 const getQueryString = ({ mainCategory, subCategory }) => {
   let queryString = '';
   if (mainCategory) queryString += `?mainCategory=${mainCategory}`
-  if (subCategory) queryString += `?subCategory=${subCategory}`
+  if (subCategory) queryString += `${mainCategory ? '&' : '?'}subCategory=${subCategory}`
 
   return queryString;
 }
