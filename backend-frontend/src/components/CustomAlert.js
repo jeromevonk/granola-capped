@@ -2,8 +2,7 @@ import * as React from 'react';
 import { useRouter } from 'next/router';
 import PropTypes from 'prop-types';
 import Snackbar from '@mui/material/Snackbar';
-import IconButton from '@mui/material/IconButton';
-import CloseIcon from '@mui/icons-material/Close';
+import Alert from '@mui/material/Alert';
 
 import { alertService } from 'src/services';
 
@@ -16,35 +15,37 @@ CustomAlert.propTypes = {
 
 function CustomAlert({ id }) {
   const router = useRouter();
-  const [alerts, setAlerts] = React.useState([]);
+  const [alert, setAlert] = React.useState(null);
   const [open, setOpen] = React.useState(true);
 
-  const clearEmtpyAlerts = () => {
-    setAlerts(currentAlerts => {
-      // filter out alerts without 'keepAfterRouteChange' flag
-      const filteredAlerts = currentAlerts.filter(x => x.keepAfterRouteChange);
-
-      // set 'keepAfterRouteChange' flag to false on the rest
-      filteredAlerts.forEach(x => delete x.keepAfterRouteChange);
-      return filteredAlerts;
+  const clearEmptyAlert = () => {
+    setAlert(current => {
+      // preserve alert across a single route change if flagged, then drop the flag
+      if (current?.keepAfterRouteChange) {
+        delete current.keepAfterRouteChange;
+        return current;
+      }
+      return null;
     });
   }
 
   React.useEffect(() => {
     // subscribe to new alert notifications
     const subscription = alertService.onAlert(id)
-      .subscribe(alert => {
-        // clear alerts when an empty alert is received
-        if (!alert.message) {
-          clearEmtpyAlerts()
+      .subscribe(next => {
+        if (!next.message) {
+          clearEmptyAlert();
         } else {
           // replace with the latest alert so a new action always supersedes a stale one
-          setAlerts([alert]);
+          setAlert(next);
           setOpen(true);
         }
       });
 
-    // clear alerts on location change
+    // clear alerts on location change. Deferred via setTimeout so the clear
+    // runs after the new route's components have mounted and subscribed —
+    // otherwise alerts emitted during navigation (e.g. keepAfterRouteChange)
+    // would be cleared before the new page can receive them.
     const clearAlerts = () => {
       setTimeout(() => alertService.clear(id));
     };
@@ -60,7 +61,7 @@ function CustomAlert({ id }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!alerts.length) return null;
+  if (!alert) return null;
 
   const handleClose = (_event, reason) => {
     if (reason === 'clickaway') {
@@ -68,30 +69,24 @@ function CustomAlert({ id }) {
     }
 
     setOpen(false);
+    setAlert(null);
   };
 
-  const action = (
-    <IconButton
-      size="small"
-      aria-label="close"
-      color="inherit"
-      onClick={handleClose}
-    >
-      <CloseIcon fontSize="small" />
-    </IconButton>
-  );
-
-  // Current limitation: will only show the first alert on list
   return (
-    <div>
-      <Snackbar
-        open={open}
-        autoHideDuration={850}
+    <Snackbar
+      open={open}
+      autoHideDuration={850}
+      onClose={handleClose}
+      anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
+    >
+      <Alert
         onClose={handleClose}
-        message={alerts[0].message}
-        action={action}
-        anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
-      />
-    </div>
+        severity={alert.type}
+        variant="filled"
+        sx={{ width: '100%' }}
+      >
+        {alert.message}
+      </Alert>
+    </Snackbar>
   );
 }
