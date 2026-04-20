@@ -3,11 +3,19 @@ import { useState, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import PropTypes from 'prop-types';
 import Head from 'next/head';
+import { Roboto } from 'next/font/google';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { CacheProvider } from '@emotion/react';
 import theme from '../theme';
 import createEmotionCache from '../createEmotionCache';
+
+const roboto = Roboto({
+  weight: ['300', '400', '500', '700'],
+  subsets: ['latin'],
+  display: 'swap',
+  fallback: ['Helvetica', 'Arial', 'sans-serif'],
+});
 
 import { userService, categoryService, alertService } from 'src/services';
 import { CustomAlert } from 'src/components/CustomAlert';
@@ -45,19 +53,13 @@ export default function MyApp(props) {
       height: window.matchMedia(`(min-height: ${HEIGT_TRESHOLD}px)`).matches
     });
 
-    // Handlers
+    // Handlers — skip updates when the value hasn't changed to avoid cascading re-renders
     const handleWidthResize = e => {
-      setLargeScreen(prev => ({
-        ...prev,
-        width: e.matches
-      }))
+      setLargeScreen(prev => prev.width === e.matches ? prev : { ...prev, width: e.matches })
     };
 
     const handleHeigthResize = e => {
-      setLargeScreen(prev => ({
-        ...prev,
-        height: e.matches
-      }))
+      setLargeScreen(prev => prev.height === e.matches ? prev : { ...prev, height: e.matches })
     };
 
     // Set listeners
@@ -165,7 +167,7 @@ export default function MyApp(props) {
         {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
         <CssBaseline />
         <AppContext.Provider value={memoized}>
-          <div>
+          <div className={roboto.className}>
             <ResponsiveAppBar />
             <CustomAlert />
             {authorized &&

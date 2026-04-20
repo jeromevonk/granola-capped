@@ -470,7 +470,22 @@ const CustomWidthTooltip = styled(({ className, ...props }) => (
   },
 });
 
-export default function ExpensesTable(props) {
+// Hoisted out of the component — was being redefined on every render
+const StyledTableRow = styled(TableRow)(({ theme: appTheme }) => ({
+  '&:nth-of-type(odd)': {
+    backgroundColor: appTheme.palette.action.hover,
+  },
+  '&:last-child td, &:last-child th': {
+    border: 0,
+  },
+}));
+
+// Hoisted static sx objects to keep identity stable across renders
+const boxFullWidthSx = { width: '100%' };
+const paperSx = { width: '100%', mb: 2 };
+const tableSx = { minWidth: 250 };
+
+function ExpensesTable(props) {
   // Context
   const context = React.useContext(AppContext);
   const largeScreen = context?.largeScreen;
@@ -586,19 +601,6 @@ export default function ExpensesTable(props) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keyE, key2, searchFocus]);
-
-  // ----------------------------------------
-  //  Style for table rows
-  // ----------------------------------------
-  const StyledTableRow = styled(TableRow)(({ theme: appTheme }) => ({
-    '&:nth-of-type(odd)': {
-      backgroundColor: appTheme.palette.action.hover,
-    },
-    // hide last border
-    '&:last-child td, &:last-child th': {
-      border: 0,
-    },
-  }));
 
   // ----------------------------------------
   //  Button handlers
@@ -726,8 +728,8 @@ export default function ExpensesTable(props) {
 
 
   return (
-    <Box sx={{ width: '100%' }}>
-      <Paper sx={{ width: '100%', mb: 2 }}>
+    <Box sx={boxFullWidthSx}>
+      <Paper sx={paperSx}>
         <ExpensesTableToolbar
           selected={selected}
           setSelected={setSelected}
@@ -741,7 +743,7 @@ export default function ExpensesTable(props) {
         />
         <TableContainer>
           <Table
-            sx={{ minWidth: 250 }}
+            sx={tableSx}
             aria-labelledby="tableTitle"
             size={'small'}
           >
@@ -853,3 +855,5 @@ ExpensesTable.propTypes = {
   filter: PropTypes.object,
   order: PropTypes.string,
 };
+
+export default React.memo(ExpensesTable);

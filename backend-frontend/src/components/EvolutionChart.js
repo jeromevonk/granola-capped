@@ -4,7 +4,7 @@ import { Chart } from "react-google-charts";
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 
-export default function EvolutionChart({ data, options, evolutionCategory, eventCallback = () => ({}) }) {
+function EvolutionChart({ data, options, evolutionCategory, eventCallback = () => ({}) }) {
   if (data.length === 0) {
     return (
       <Box>
@@ -51,3 +51,5 @@ EvolutionChart.propTypes = {
   evolutionCategory: PropTypes.object.isRequired,
   eventCallback: PropTypes.func.isRequired,
 };
+
+export default React.memo(EvolutionChart);

@@ -3,7 +3,8 @@ import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import LinearProgress from '@mui/material/LinearProgress';
 import { useRouter } from 'next/router'
-import EvolutionChart from '../components/EvolutionChart';
+import dynamic from 'next/dynamic';
+const EvolutionChart = dynamic(() => import('../components/EvolutionChart'), { ssr: false });
 import EvolutionSelector from '../components/EvolutionSelector';
 import { statsService, alertService } from 'src/services';
 import { AppContext } from 'src/pages/_app';

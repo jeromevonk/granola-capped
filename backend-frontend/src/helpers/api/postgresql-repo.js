@@ -57,7 +57,8 @@ const config = {
       rejectUnauthorized: true,
       ca: AIVEN_CA_CERT
     }
-  }
+  },
+  pool: { min: 2, max: 10, idleTimeoutMillis: 30000 }
 }
 
 // --------------------------------------------
@@ -69,7 +70,8 @@ if (process.env.NODE_ENV == 'development') {
   delete config.connection.ssl;
 }
 
-const knex = require('knex')(config);
+// Cache on globalThis so dev-mode module reloads don't create multiple pools
+const knex = globalThis.__knex ?? (globalThis.__knex = require('knex')(config));
 
 // Get current year
 const CURRENT_YEAR = new Date().getFullYear();

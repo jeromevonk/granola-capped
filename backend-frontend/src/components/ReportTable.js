@@ -105,7 +105,7 @@ ReportTableHead.propTypes = {
 };
 
 
-export default function ReportTable(props) {
+function ReportTable(props) {
   // Context
   const context = React.useContext(AppContext);
   const largeScreen = context?.largeScreen;
@@ -276,3 +276,5 @@ ReportTable.propTypes = {
   data: PropTypes.array.isRequired,
   numMonths: PropTypes.number.isRequired,
 };
+
+export default React.memo(ReportTable);
