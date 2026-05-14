@@ -154,7 +154,7 @@ const ExpensesTableToolbar = (props) => {
         </Typography>
       )}
       <Typography
-        sx={{ flex: '1 1 40%', color: theme.palette.primary.main }}
+        sx={{ flex: '1 1 40%', color: theme.palette.primary.main, fontWeight: 700 }}
         variant="subtitle1"
         id="tableTitle"
         component="div"

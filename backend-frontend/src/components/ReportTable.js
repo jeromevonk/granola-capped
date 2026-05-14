@@ -53,17 +53,17 @@ function ReportTableHead(props) {
         label: month,
       });
     }
-  
+
     cells.push(
       {
         id: 'year',
         disablePadding: false,
         label: 'Year',
       });
-  
+
     return cells;
   }
-  
+
   const headCells = createHeadCells();
 
   return (
@@ -91,7 +91,8 @@ function ReportTableHead(props) {
                 )}
               </TableSortLabel>
             </StyledTableCell>
-          )})}
+          )
+        })}
       </TableRow>
     </TableHead>
   );
@@ -115,10 +116,10 @@ function ReportTable(props) {
   const [order, setOrder] = React.useState('desc');
   const [orderBy, setOrderBy] = React.useState('year');
   const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(largeScreen.height? 20 : 8);
+  const [rowsPerPage, setRowsPerPage] = React.useState(largeScreen.height ? 20 : 8);
 
   React.useEffect(() => {
-    setRowsPerPage(largeScreen.height? 20 : 8)
+    setRowsPerPage(largeScreen.height ? 20 : 8)
   }, [largeScreen.height]);
 
   const rows = props.data || [];
@@ -155,7 +156,7 @@ function ReportTable(props) {
   const getCellsForOneRow = (row) => {
     // Start with 'category'
     const cells = [
-      (<StyledTableCell 
+      (<StyledTableCell
         align="center"
         key={`${row.categoryText}`}
       >{row.categoryText}
@@ -164,7 +165,7 @@ function ReportTable(props) {
     // Then, add months
     for (let i = 1; i <= numMonths; i++) {
       const value = getCellValue(row[i]);
-      cells.push((<StyledTableCell 
+      cells.push((<StyledTableCell
         align={getCellAlignment(value)}
         key={`${row.categoryText}-${i}`}
       >{value}
@@ -172,7 +173,7 @@ function ReportTable(props) {
     }
 
     // Lastly, add 'year'
-    cells.push((<StyledTableCell 
+    cells.push((<StyledTableCell
       align="right"
       key={`${row.category}-year`}
     >{getCellValue(row.year)}
@@ -183,14 +184,14 @@ function ReportTable(props) {
 
   const getCellValue = (value) => {
     let toReturn = '••••••••';
-    if (visibility){
+    if (visibility) {
       toReturn = Number(value) === 0 ? '-' : customlocaleString(value);
     }
 
     return toReturn;
   }
 
-  const getCellAlignment= (value) => {
+  const getCellAlignment = (value) => {
     return value == '-' ? "center" : "right";
   }
 
@@ -238,10 +239,10 @@ function ReportTable(props) {
                       key={`row-${row.category}`}
                     >
                       {
-                      // Every item in the array on it's cell
+                        // Every item in the array on it's cell
                         getCellsForOneRow(row)
                       }
-                    
+
                     </StyledTableRow>
                   );
                 })}
