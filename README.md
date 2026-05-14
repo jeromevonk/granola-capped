@@ -15,7 +15,6 @@ Have a look at [the original repo](https://github.com/jeromevonk/granola).
 ### Developer experience & tooling
 - **Add TypeScript** — project is JS-only today; migrating incrementally (rename `.js` → `.tsx`, add `tsconfig.json`) would catch prop/shape bugs surfaced by the recent refactors.
 - **Add a test suite** — no tests currently. Start with Vitest + React Testing Library for components and a handful of API-route integration tests against a local Postgres.
-- **Set up CI** (GitHub Actions) to run `next build`, lint, and tests on every PR.
 - **Add Prettier** with a pre-commit hook (Husky + lint-staged) for consistent formatting.
 - **Dockerize local development** — a `docker-compose.yml` with Postgres + app service would remove the "is my local DB running?" class of problems and make onboarding trivial.
 - **Pin remaining `latest` / caret-only deps** to exact versions. `package.json` was partially cleaned up, but caret ranges (`^`) on transitive-heavy libs (`next`, `@mui/x-date-pickers`, `react`) still allow silent version drift.
