@@ -23,7 +23,7 @@ import { useForm } from 'react-hook-form';
 
 import { expenseService, alertService } from 'src/services';
 import { getParentCategoryId, getSubCategories } from 'src/helpers'
-import { AppContext } from 'src/pages/_app';
+import { useCategories, useInvalidateExpenses } from 'src/hooks/queries';
 
 const getInitialFormData = (expense, categories) => {
   return {
@@ -45,8 +45,8 @@ const getDefaultDate = (expense) => {
 }
 
 export default function ExpenseForm(props) {
-  const context = React.useContext(AppContext);
-  const categories = context?.categories.all;
+  const { categories, mainCategories } = useCategories();
+  const invalidateExpenses = useInvalidateExpenses();
 
   // -----------------------------------
   // Form validation rules 
@@ -99,16 +99,18 @@ export default function ExpenseForm(props) {
     if (action === 'create') {
       return expenseService.createNewExpense(exp)
         .then(() => {
+          invalidateExpenses();
           alertService.success('Expense created', { keepAfterRouteChange: true });
-          router.push('/');
+          router.push({ pathname: '/', query: { year: exp.year, month: exp.month } }, '/');
         })
         .catch((err => alertService.error(err)))
         .finally(() => setIsSubmitting(false));
     } else if (action === 'edit') {
       return expenseService.editExpense(expenseId, exp)
         .then(() => {
+          invalidateExpenses();
           alertService.success('Expense edited', { keepAfterRouteChange: true });
-          router.push('/');
+          router.push({ pathname: '/', query: { year: exp.year, month: exp.month } }, '/');
         })
         .catch((err => alertService.error(err)))
         .finally(() => setIsSubmitting(false));
@@ -121,11 +123,14 @@ export default function ExpenseForm(props) {
   const { expenseId, expense, action } = props;
 
   // States
-  const [formData, setFormData] = React.useState(getInitialFormData(expense, categories));
+  // Category selection is derived from props/categories until the user
+  // touches a select (override === null). This keeps the selects correct
+  // even when categories arrive after mount (cold load into this page).
+  const [formDataOverride, setFormDataOverride] = React.useState(null);
+  const formData = formDataOverride ?? getInitialFormData(expense, categories);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  // Categories and sub-categories
-  const mainCategories = context?.categories.mainCategories;
+  // Sub-categories for the selected main category
   const subCategories = getSubCategories(categories, formData.mainCategory);
 
 
@@ -134,28 +139,20 @@ export default function ExpenseForm(props) {
     event.preventDefault()
     const { name, value } = event.target;
 
-    setFormData(prevFormData => ({
-      ...prevFormData,
-      [name]: value
-    }));
+    setFormDataOverride(prev => {
+      const base = prev ?? getInitialFormData(expense, categories);
+      const next = { ...base, [name]: value };
 
-    // For convenience, when a category is set and there 
-    // is only 1 sub-category, select it as default
-    if (name === 'mainCategory') {
-      const sub = getSubCategories(categories, value);
-      if (sub.length == 1) {
-        setFormData(prevFormData => ({
-          ...prevFormData,
-          subCategory: sub[0].id
-        }));
-      } else {
-        // need to reset subCategory, since options have changed
-        setFormData(prevFormData => ({
-          ...prevFormData,
-          subCategory: ''
-        }));
+      // For convenience, when a category is set and there
+      // is only 1 sub-category, select it as default.
+      // Otherwise reset subCategory, since options have changed
+      if (name === 'mainCategory') {
+        const sub = getSubCategories(categories, value);
+        next.subCategory = sub.length === 1 ? sub[0].id : '';
       }
-    }
+
+      return next;
+    });
   };
 
   // ---------------------------------------

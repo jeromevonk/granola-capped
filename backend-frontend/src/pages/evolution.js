@@ -6,21 +6,17 @@ import { useRouter } from 'next/router'
 import dynamic from 'next/dynamic';
 const EvolutionChart = dynamic(() => import('../components/EvolutionChart'), { ssr: false });
 import EvolutionSelector from '../components/EvolutionSelector';
-import { statsService, alertService } from 'src/services';
-import { AppContext } from 'src/pages/_app';
+import { useCategories, useEvolution } from 'src/hooks/queries';
 import { getCategoryTitles, getParentCategoryId, capitalizeFirstLetter, manipulateData, parseDate } from 'src/helpers'
 
 export default function Evolution() {
-  // Context
-  const context = React.useContext(AppContext);
-  const categories = context?.categories.all;
+  // Server state
+  const { categories } = useCategories();
 
   // Router
   const router = useRouter();
 
   // States
-  const [rawData, setRawData] = React.useState({});
-  const [isLoading, setIsLoading] = React.useState(false);
   const [selectedOptions, setSelectedOptions] = React.useState({
     hideEmptyMonths: false,
     evolutionDateType: 'year',
@@ -37,45 +33,16 @@ export default function Evolution() {
     }))
   };
 
-  // -----------------------------------------------
-  // Auxiliar functions for managing state
-  // -----------------------------------------------
-  const hasData = (dateType, categoryKey, dataObj) => {
-    return dataObj[dateType]?.[categoryKey];
-  }
-
-  const addDataToState = (dateType, categoryType, categoryNumber, data) => {
-    const categoryKey = getCategoryKey(categoryType, categoryNumber);
-    setRawData(prev => ({
-      // Copy data from all types
-      ...prev,
-
-      // Data for the selected type is what we are changing
-      [dateType]: {
-        // Copy data from all categories
-        ...prev[dateType],
-
-        // Data for the selected category is what we are changing
-        [categoryKey]: data
-      }
-    }));
-  }
-
-  const getSelectedData = (options, data) => {
-    const dateType = options.evolutionDateType;
-    const { type: categoryType, number: categoryNumber } = options.evolutionCategory;
-    const categoryKey = getCategoryKey(categoryType, categoryNumber);
-
-    if (hasData(dateType, categoryKey, data)) {
-      return data[dateType][categoryKey];
-    } else {
-      return [];
-    }
-  }
-
-  const getCategoryKey = (categoryType, categoryNumber) => {
-    return `${categoryType}-${categoryNumber}`;
-  }
+  // ------------------------------------------------------------
+  // Evolution data comes from the query cache, keyed by
+  // (dateType, categoryType, categoryNumber) — every combination
+  // the user visits stays cached across navigation
+  // ------------------------------------------------------------
+  const { data: selectedData, isPending } = useEvolution(
+    selectedOptions.evolutionDateType,
+    selectedOptions.evolutionCategory.type,
+    selectedOptions.evolutionCategory.number
+  );
 
   // -----------------------------------------------
   // Make the chart title
@@ -93,59 +60,6 @@ export default function Evolution() {
 
     return title;
   }
-
-  // ------------------------------------
-  // Get data via API
-  // ------------------------------------
-  React.useEffect(() => {
-
-    const dateType = selectedOptions.evolutionDateType;
-    const { type: categoryType, number: categoryNumber } = selectedOptions.evolutionCategory;
-    const categoryKey = getCategoryKey(categoryType, categoryNumber);
-
-    // Only make the call if there is not data already in state
-    if (hasData(dateType, categoryKey, rawData)) return;
-
-    // ---------------------------------------------------------
-    // Figure out witch request should be made and its params
-    // ---------------------------------------------------------
-    let request;
-
-    if (dateType === 'year') {
-      request = statsService.getEvolutionPerYear;
-    } else {
-      request = statsService.getEvolutionPerMonth;
-    }
-
-    const params = {};
-    if (categoryType === 'all') {
-      // Nothing to do
-    } else if (categoryType === 'mainCategory') {
-      params.mainCategory = categoryNumber;
-    } else if (categoryType === 'subCategory') {
-      params.subCategory = categoryNumber;
-    }
-
-    // Set flags
-    let isSubscribed = true;
-    setIsLoading(true);
-
-    // Make request
-    request(params)
-      .then((response) => {
-        if (isSubscribed) {
-          addDataToState(dateType, categoryType, categoryNumber, response)
-        }
-        setIsLoading(false);
-      })
-      .catch(err => alertService.error(`API error: ${err}`));
-
-    return () => {
-      isSubscribed = false;
-      setIsLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedOptions.evolutionDateType, selectedOptions.evolutionCategory]);
 
   // Callback function for chart events
   const eventCallback = (selected, evolutionCategory) => {
@@ -185,8 +99,7 @@ export default function Evolution() {
   }
 
   // Prepare the data according to user selection of hideEmptyMonths
-  const selectedData = getSelectedData(selectedOptions, rawData);
-  const chartData = manipulateData(selectedOptions, selectedData);
+  const chartData = manipulateData(selectedOptions, selectedData || []);
 
   // Get chart title
   const chartTitle = makeTitle(selectedOptions);
@@ -204,7 +117,7 @@ export default function Evolution() {
       <Box sx={{ width: '100%' }}>
         {
           // If loading, show 'progress'
-          isLoading ?
+          isPending ?
             (
               <Container maxWidth="lg">
                 <LinearProgress color="primary" />

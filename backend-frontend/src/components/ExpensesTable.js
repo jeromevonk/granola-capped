@@ -19,6 +19,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import Stack from '@mui/material/Stack';
 import { visuallyHidden } from '@mui/utils';
 import { AppContext } from 'src/pages/_app';
+import { useCategories } from 'src/hooks/queries';
 import {
   getCategoryTitles,
   customlocaleString,
@@ -486,12 +487,14 @@ const paperSx = { width: '100%', mb: 2 };
 const tableSx = { minWidth: 250 };
 
 function ExpensesTable(props) {
-  // Context
+  // Context (UI state)
   const context = React.useContext(AppContext);
   const largeScreen = context?.largeScreen;
-  const categories = context?.categories.all;
   const [visibility] = context?.visibility || false;
   const [searchFocus] = context?.searchFocus || false;
+
+  // Server state
+  const { categories } = useCategories();
 
   // States
   const [order, setOrder] = React.useState(props.order || 'asc');

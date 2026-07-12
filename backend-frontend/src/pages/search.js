@@ -5,32 +5,33 @@ import { useRouter, withRouter } from 'next/router'
 import ExpensesTable from '../components/ExpensesTable';
 import { expenseService, alertService } from 'src/services';
 import { mapExpenseToRow, parseDate } from 'src/helpers'
+import { useCategories, useExpenseSearch, useInvalidateExpenses } from 'src/hooks/queries';
 import { AppContext } from 'src/pages/_app';
 import SearchIcon from '@mui/icons-material/Search';
 
 function Search(props) {
   const { query } = props.router.query;
 
-  // Context
+  // Context (UI state)
   const context = React.useContext(AppContext);
-  const categories = context?.categories.all;
   const largeScreen = context?.largeScreen;
+
+  // Server state — results are cached per search term
+  const { categories } = useCategories();
+  const { data: searchResults, isPending } = useExpenseSearch(query);
+  const invalidateExpenses = useInvalidateExpenses();
 
   // Router
   const router = useRouter();
 
-  // -------------------------------------------------------
-  // In this page, 'expenses' state is an array of expenses
-  // -------------------------------------------------------
-  const [expenses, setExpenses] = React.useState({ query: false, result: [] });
-  const [isLoading, setIsLoading] = React.useState(false);
+  const rows = React.useMemo(() => {
+    if (!searchResults || categories.length === 0) return [];
+
+    return searchResults.map(expense => mapExpenseToRow(expense, categories, 'full'));
+  }, [searchResults, categories]);
 
   const findExpense = (target) => {
-    return expenses.result.find(item => item.id === target);
-  }
-
-  const filterNotDeleted = (arr, response) => {
-    return arr.filter(item => !response.deleted.includes(item.id))
+    return rows.find(item => item.id === target);
   }
 
   // -------------------------------------------
@@ -40,16 +41,10 @@ function Search(props) {
     if (action === 'delete') {
       expenseService.deleteExpenses(selected)
         .then((response) => {
-          setExpenses(prev => ({
-            ...prev,
-            result: filterNotDeleted(prev.result, response)
-          }));
-
-          return response;
-        })
-        .then((response) => {
+          invalidateExpenses();
           alertService.success(`${response.deleted.length} expense(s) deleted, ${response.failed.length} failed`);
-        });
+        })
+        .catch(err => alertService.error(`API error: ${err}`));
     } else if (action === 'edit' || action === 'duplicate') {
       // Find expense (there should be only 1 selected, so use first position of the list)
       const exp = findExpense(selected[0]);
@@ -76,44 +71,8 @@ function Search(props) {
     }
   }
 
-  // -----------------------------------------------------
-  // Get expenses via API
-  // -----------------------------------------------------
-  React.useEffect(() => {
-    // Dot not proceed if query is undefined
-    if (!query) return;
-
-    // Dot not proceed if we already have that query saved on state
-    if (expenses.query === query) return;
-
-    // If we do not have the categories yet, do not bother getting the data
-    if (categories.length === 0) return;
-
-    // Set flags
-    let isSubscribed = true;
-    setIsLoading(true);
-
-    // Make request
-    expenseService.searchExpenses(query)
-      .then(expenseList => {
-        if (isSubscribed) {
-          setExpenses({
-            query,
-            result: expenseList.map(expense => mapExpenseToRow(expense, categories, 'full'))
-          });
-        }
-        setIsLoading(false);
-      })
-      .catch(err => alertService.error(`API error: ${err}`));
-    return () => {
-      isSubscribed = false;
-      setIsLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   // Title
-  const title = largeScreen.width ? `Search results for: ${expenses.query}` : expenses.query;
+  const title = largeScreen.width ? `Search results for: ${query}` : (query || '');
 
   return (
     <Container>
@@ -121,7 +80,7 @@ function Search(props) {
         <Stack spacing={1}>
           {
             // If loading, show 'progress'
-            isLoading ?
+            (query && isPending) ?
               (
                 <Box>
                   <LinearProgress color="primary" />
@@ -131,7 +90,7 @@ function Search(props) {
                 <ExpensesTable
                   handleAction={handleAction}
                   title={title}
-                  expenses={expenses.result}
+                  expenses={rows}
                   order="desc"
                 />
               )

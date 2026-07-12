@@ -18,7 +18,8 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import SearchBar from '../components/SearchBar';
 import { useRouter } from 'next/router'
-import { categoryService, userService } from 'src/services';
+import { useQueryClient } from '@tanstack/react-query';
+import { userService } from 'src/services';
 import { capitalizeFirstLetter } from 'src/helpers'
 import { AppContext } from 'src/pages/_app';
 
@@ -62,7 +63,7 @@ const ResponsiveAppBar = () => {
   const context = React.useContext(AppContext);
   const [visibility, setVisibility] = context?.visibility || false;
   const {1: setSearchFocus} = context?.searchFocus || false;
-  const setCategories = context?.categories.setCategories;
+  const queryClient = useQueryClient();
 
   // States
   const [anchorElNav, setAnchorElNav] = React.useState(null);
@@ -75,9 +76,8 @@ const ResponsiveAppBar = () => {
   }, []);
 
   function logout() {
-    // Remove categories
-    categoryService.removeFromLocalStorage();
-    setCategories(null);
+    // Drop all cached server data (it belongs to the logged-out user)
+    queryClient.clear();
 
     // Logout
     userService.logout();

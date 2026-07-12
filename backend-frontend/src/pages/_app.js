@@ -7,6 +7,7 @@ import { Roboto } from 'next/font/google';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { CacheProvider } from '@emotion/react';
+import { QueryClient, QueryClientProvider, QueryCache } from '@tanstack/react-query';
 import theme from '../theme';
 import createEmotionCache from '../createEmotionCache';
 
@@ -17,9 +18,8 @@ const roboto = Roboto({
   fallback: ['Helvetica', 'Arial', 'sans-serif'],
 });
 
-import { userService, categoryService, alertService } from 'src/services';
+import { userService, alertService } from 'src/services';
 import { CustomAlert } from 'src/components/CustomAlert';
-import { getMainCategories } from 'src/helpers'
 
 import ResponsiveAppBar from 'src/components/ResponsiveAppBar';
 
@@ -36,6 +36,28 @@ export default function MyApp(props) {
   const { Component, emotionCache = clientSideEmotionCache, pageProps } = props;
 
   const router = useRouter();
+
+  // ----------------------------------------------------------------
+  // Server-state cache. Lives above the router, so data survives page
+  // navigation. Mutations invalidate explicitly; the 5-min staleTime +
+  // refetchOnWindowFocus cover the same user writing from another
+  // device (e.g. desktop -> phone): returning to the tab shows cached
+  // data instantly and revalidates in the background.
+  // Query errors are handled once, globally, instead of per page.
+  // ----------------------------------------------------------------
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 5 * 60 * 1000,
+        gcTime: 60 * 60 * 1000, // keep inactive data for 1h (e.g. other years)
+        retry: 1,
+        refetchOnWindowFocus: true,
+      },
+    },
+    queryCache: new QueryCache({
+      onError: (err) => alertService.error(`API error: ${err.message}`),
+    }),
+  }));
 
   // authorized does not mean authenticated - it means authorized for the current page
   const [authorized, setAuthorized] = useState(false);
@@ -99,30 +121,6 @@ export default function MyApp(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ----------------------------------------
-  // Get the categories list only once
-  // ----------------------------------------
-  const [categories, setCategories] = React.useState(null);
-  React.useEffect(() => {
-    if (categories !== null) return;
-
-    if (userService.userValue) {
-      // Get categories, save on state
-      let isSubscribed = true;
-      categoryService.getCategories()
-        .then(cat => {
-          if (isSubscribed) {
-            setCategories({
-              all: cat,
-              mainCategories: getMainCategories(cat),
-            });
-          }
-        })
-        .catch(err => alertService.error('Error fetching categories'));
-      return () => isSubscribed = false
-    }
-  });
-
   function authCheck(url) {
     // redirect to login page if accessing a private page and not logged in 
     const publicPaths = ['/account/login', '/account/register'];
@@ -137,14 +135,9 @@ export default function MyApp(props) {
     }
   }
 
-  // Memoizing
+  // UI-only global state — server data lives in the query cache
   const memoized = useMemo(() => ({
     largeScreen,
-    categories: {
-      all: categories?.all || [],
-      mainCategories: categories?.mainCategories || [],
-      setCategories: setCategories
-    },
     visibility: [
       visibility,
       setVisibility
@@ -153,7 +146,7 @@ export default function MyApp(props) {
       searchFocus,
       setSearchFocus
     ]
-  }), [largeScreen, categories, visibility, searchFocus]);
+  }), [largeScreen, visibility, searchFocus]);
 
   return (
     <CacheProvider value={emotionCache}>
@@ -164,15 +157,17 @@ export default function MyApp(props) {
       <ThemeProvider theme={theme}>
         {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
         <CssBaseline />
-        <AppContext.Provider value={memoized}>
-          <div className={roboto.className}>
-            <ResponsiveAppBar />
-            <CustomAlert />
-            {authorized &&
-              <Component {...pageProps} />
-            }
-          </div>
-        </AppContext.Provider>
+        <QueryClientProvider client={queryClient}>
+          <AppContext.Provider value={memoized}>
+            <div className={roboto.className}>
+              <ResponsiveAppBar />
+              <CustomAlert />
+              {authorized &&
+                <Component {...pageProps} />
+              }
+            </div>
+          </AppContext.Provider>
+        </QueryClientProvider>
       </ThemeProvider>
     </CacheProvider>
   );

@@ -1,17 +1,58 @@
 import * as React from 'react';
 import { Container, Box, Stack, Typography, LinearProgress } from '@mui/material';
 import ReportTable from '../components/ReportTable';
-import { statsService, alertService } from 'src/services';
 import YearPicker from '../components/YearPicker';
 import CategorySelector from '../components/CategorySelector';
+import { useCategories, useCategoryReport } from 'src/hooks/queries';
 import { AppContext } from 'src/pages/_app';
 import { getCategoryTitles, sortTitleAlphabetically } from 'src/helpers'
 
+const groupByCategory = (data, categoryList) => {
+  const grouped = {};
+
+  // How many months do we need to display as columns?
+  const numMonths = data.reduce((previous, current) => Math.max(previous, current.month), 0);
+
+  // There's data for several months. First, group by category
+  for (const entry of data) {
+    if (!(entry.category in grouped)) grouped[entry.category] = {}
+    grouped[entry.category][entry.month] = entry.amountSpent;
+  }
+
+  // Now, convert to an array
+  const year = [];
+
+  // For every category
+  for (let [key, value] of Object.entries(grouped)) {
+    const entry = {
+      category: Number(key),
+      categoryText: getCategoryTitles(categoryList, Number(key)).categoryTitle
+    };
+
+    // Get the amount for every month (and sum)
+    let sum = 0;
+    for (let i = 1; i <= numMonths; i++) {
+      let spent = value[i] || "0.00";
+      entry[i] = spent;
+      sum += Number(spent);
+    }
+    // Add YTD sum
+    entry.year = sum.toFixed(2);
+
+    // Push to resulting array
+    year.push(entry);
+  }
+
+  return { grouped: year, numMonths };
+}
+
 export default function Report() {
-  // Context
+  // Context (UI state)
   const context = React.useContext(AppContext);
   const largeScreen = context?.largeScreen;
-  const categories = context?.categories.all;
+
+  // Server state
+  const { categories } = useCategories();
 
   // ------------------------------------------
   // States
@@ -20,11 +61,6 @@ export default function Report() {
     year: new Date().getFullYear(),
     type: 'mainCategory'
   });
-
-  // 'reportData' is an object which holds data for every (year, type) the user picks. 
-  const [reportData, setReportData] = React.useState({});
-  const [mainCategories, setMainCategories] = React.useState([]);
-  const [isLoading, setIsLoading] = React.useState(false);
 
   const handleChange = (name, value) => {
     setSelectedOptions(prev => {
@@ -41,6 +77,34 @@ export default function Report() {
     })
   };
 
+  // ------------------------------------------------------------------
+  // Report data comes from the query cache, keyed by (year, type).
+  // The mainCategory report of the selected year is always fetched too
+  // (it feeds the category selector); when type === 'mainCategory'
+  // both hooks share the same key, so only one request is made.
+  // ------------------------------------------------------------------
+  const { data: reportData, isPending } = useCategoryReport(selectedOptions.year, selectedOptions.type);
+  const { data: mainReportData } = useCategoryReport(selectedOptions.year, 'mainCategory');
+
+  const selectedData = React.useMemo(() => {
+    if (!reportData || categories.length === 0) return {};
+
+    const { grouped, numMonths } = groupByCategory(reportData, categories);
+    return { values: grouped, numMonths };
+  }, [reportData, categories]);
+
+  // Categories with a non-zero sum in the selected year, for the
+  // "one category detailed" selector
+  const mainCategories = React.useMemo(() => {
+    if (!mainReportData || categories.length === 0) return [];
+
+    const { grouped } = groupByCategory(mainReportData, categories);
+
+    return grouped
+      .map(item => ({ id: item.category, title: item.categoryText }))
+      .sort(sortTitleAlphabetically);
+  }, [mainReportData, categories]);
+
   const makeTitle = ({ year, type }) => {
 
     if (type === 'mainCategory') {
@@ -54,139 +118,6 @@ export default function Report() {
     }
 
   }
-
-  // -----------------------------------------------
-  // Auxiliar functions for managing state
-  // -----------------------------------------------
-  const hasData = (year, type, dataObj) => {
-    return dataObj[year]?.[type];
-  }
-
-  const addDataToState = (year, type, values, numMonths) => {
-    setReportData(prev => ({
-      // Copy data from all years
-      ...prev,
-
-      // Data for the selected year is what we are changing
-      [year]: {
-        // Copy data from all years
-        ...prev[year],
-
-        // Data for the selected type is what we are changing
-        [type]: {
-          values,
-          numMonths
-        }
-      }
-    }));
-  }
-
-  const getSelectedData = ({ year, type }, data) => {
-    if (hasData(year, type, data)) {
-      return data[year][type];
-    } else {
-      return {}
-    }
-  }
-
-  const groupByCategory = (data, categoryList) => {
-    const grouped = {};
-
-    // How many months do we need to display as columns?
-    const numMonths = data.reduce((previous, current) => Math.max(previous, current.month), 0);
-
-    // There's data for several months. First, group by category
-    for (const entry of data) {
-      if (!(entry.category in grouped)) grouped[entry.category] = {}
-      grouped[entry.category][entry.month] = entry.amountSpent;
-    }
-
-    // Now, convert to an array
-    const year = [];
-
-    // For every category
-    for (let [key, value] of Object.entries(grouped)) {
-      const entry = {
-        category: Number(key),
-        categoryText: getCategoryTitles(categoryList, Number(key)).categoryTitle
-      };
-
-      // Get the amount for every month (and sum)
-      let sum = 0;
-      for (let i = 1; i <= numMonths; i++) {
-        let spent = value[i] || "0.00";
-        entry[i] = spent;
-        sum += Number(spent);
-      }
-      // Add YTD sum
-      entry.year = sum.toFixed(2);
-
-      // Push to resulting array
-      year.push(entry);
-    }
-
-    return { grouped: year, numMonths };
-  }
-
-  const getAvailableCategories = (grouped) => {
-    return grouped
-      .reduce((prev, current) => {
-        const id = current.category;
-        const title = getCategoryTitles(categories, id).categoryTitle;
-
-        if (!prev.find(item => item.id === id)) {
-          // Add current to array
-          prev.push({ id, title })
-        }
-
-        return prev;
-      }, []);
-  }
-
-  // ------------------------------------
-  // Get data via API
-  // ------------------------------------
-  React.useEffect(() => {
-
-    // Only make the call if there is not data already in state
-    if (hasData(selectedOptions.year, selectedOptions.type, reportData)) return;
-
-    // If we do not have the categories yet, do not bother getting the data
-    if (categories.length === 0) return;
-
-    // Set flags
-    let isSubscribed = true;
-    setIsLoading(true);
-
-    statsService.getCategoryReportByYear(selectedOptions.year, selectedOptions.year, selectedOptions.type)
-      .then(data => {
-        if (isSubscribed) {
-          // Group data and add to state
-          const { grouped, numMonths } = groupByCategory(data, categories);
-          addDataToState(selectedOptions.year, selectedOptions.type, grouped, numMonths);
-
-          // --------------------------------------------------------------------------
-          // There might have been a year change, so if it's type == 'mainCategory',
-          // get the categories with non-zero sum
-          // --------------------------------------------------------------------------
-          if (selectedOptions.type === 'mainCategory') {
-            const availableCategories = getAvailableCategories(grouped);
-
-            // Sort and set state
-            availableCategories.sort(sortTitleAlphabetically);
-            setMainCategories(availableCategories);
-          }
-          setIsLoading(false);
-        }
-      })
-      .catch(err => alertService.error(`API error: ${err}`));
-    return () => {
-      isSubscribed = false;
-      setIsLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedOptions, categories]);
-
 
   // Enough space in screen?
   if (!largeScreen.width) {
@@ -204,7 +135,6 @@ export default function Report() {
 
   // Prepare props for ReportTable component
   const tableTitle = makeTitle(selectedOptions);
-  const selectedData = getSelectedData(selectedOptions, reportData);
 
   return (
     <Container maxWidth="xl">
@@ -223,7 +153,7 @@ export default function Report() {
           </Stack>
           {
             // If loading, show 'progress'
-            isLoading ?
+            isPending ?
               (
                 <LinearProgress color="primary" />
 
