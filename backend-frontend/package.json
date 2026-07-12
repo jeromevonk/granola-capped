@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "test": "vitest run",
     "post-update": "echo \"codesandbox preview only, need an update\" && yarn upgrade --latest"
   },
   "dependencies": {
@@ -37,6 +38,7 @@
   },
   "devDependencies": {
     "eslint": "^9.39.2",
-    "eslint-config-next": "^16.2.6"
+    "eslint-config-next": "^16.2.6",
+    "vitest": "^4.1.10"
   }
 }

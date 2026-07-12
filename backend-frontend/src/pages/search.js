@@ -4,7 +4,7 @@ import { Container, Box, Stack, Fab, LinearProgress } from '@mui/material';
 import { useRouter, withRouter } from 'next/router'
 import ExpensesTable from '../components/ExpensesTable';
 import { expenseService, alertService } from 'src/services';
-import { getCategoryTitles, parseDate } from 'src/helpers'
+import { mapExpenseToRow, parseDate } from 'src/helpers'
 import { AppContext } from 'src/pages/_app';
 import SearchIcon from '@mui/icons-material/Search';
 
@@ -27,27 +27,6 @@ function Search(props) {
 
   const findExpense = (target) => {
     return expenses.result.find(item => item.id === target);
-  }
-
-  // -------------------------------------------
-  // Custom formatDate
-  // It's basically YYYY-MM-DD
-  // with XX on the end if the day is null
-  // -------------------------------------------
-  const formatDate = (year, month, day) => {
-    let formatted = `${year}-`;
-
-    if (month < 10) formatted += '0';
-    formatted += `${month}-`;
-
-    if (day !== null) {
-      if (day < 10) formatted += '0';
-      formatted += `${day}`;
-    } else {
-      formatted += 'XX';
-    }
-
-    return formatted;
   }
 
   const filterNotDeleted = (arr, response) => {
@@ -120,26 +99,7 @@ function Search(props) {
         if (isSubscribed) {
           setExpenses({
             query,
-            result: expenseList.map(expense => {
-              // Category titles
-              const cat = getCategoryTitles(categories, expense.category);
-
-              return {
-                id: expense.id,
-                day: expense.day,
-                date: formatDate(expense.year, expense.month, expense.day),
-                description: expense.description,
-                details: expense.details,
-                category: expense.category,
-                categoryText: `${cat.parentCategoryTitle}: ${cat.categoryTitle}`,
-                mainCategoryText: cat.parentCategoryTitle,
-                subCategoryText: cat.categoryTitle,
-                amountPaid: expense.amountPaid,
-                amountReimbursed: expense.amountReimbursed,
-                spent: (expense.amountPaid - expense.amountReimbursed).toFixed(2),
-                recurring: expense.recurring,
-              }
-            })
+            result: expenseList.map(expense => mapExpenseToRow(expense, categories, 'full'))
           });
         }
         setIsLoading(false);

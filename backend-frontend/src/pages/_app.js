@@ -47,10 +47,13 @@ export default function MyApp(props) {
   // Set listeners for screen change
   // ----------------------------------------
   React.useEffect(() => {
+    const widthQuery = window.matchMedia(`(min-width: ${WIDTH_TRESHOLD}px)`);
+    const heightQuery = window.matchMedia(`(min-height: ${HEIGT_TRESHOLD}px)`);
+
     // Set initial
     setLargeScreen({
-      width: window.matchMedia(`(min-width: ${WIDTH_TRESHOLD}px)`).matches,
-      height: window.matchMedia(`(min-height: ${HEIGT_TRESHOLD}px)`).matches
+      width: widthQuery.matches,
+      height: heightQuery.matches
     });
 
     // Handlers — skip updates when the value hasn't changed to avoid cascading re-renders
@@ -63,18 +66,13 @@ export default function MyApp(props) {
     };
 
     // Set listeners
-    window
-      .matchMedia(`(min-width: ${WIDTH_TRESHOLD}px)`)
-      .addEventListener('change', handleWidthResize);
+    widthQuery.addEventListener('change', handleWidthResize);
+    heightQuery.addEventListener('change', handleHeigthResize);
 
-    window
-      .matchMedia(`(min-height: ${HEIGT_TRESHOLD}px)`)
-      .addEventListener('change', handleHeigthResize);
-
-    // Cleanup
+    // Cleanup — must remove from the MediaQueryList objects the listeners were added to
     return () => {
-      window.removeEventListener('change', handleWidthResize);
-      window.removeEventListener('change', handleHeigthResize);
+      widthQuery.removeEventListener('change', handleWidthResize);
+      heightQuery.removeEventListener('change', handleHeigthResize);
     }
   }, []);
 

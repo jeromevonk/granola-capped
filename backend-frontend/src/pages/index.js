@@ -7,7 +7,7 @@ import { useRouter, withRouter } from 'next/router'
 import ExpensesTable from '../components/ExpensesTable';
 import DateSelector from '../components/DateSelector';
 import { expenseService, alertService } from 'src/services';
-import { getCustomDateString, getCategoryTitles, useKeyPress } from 'src/helpers'
+import { getCustomDateString, mapExpenseToRow, useKeyPress } from 'src/helpers'
 import { AppContext } from 'src/pages/_app';
 
 function Index(props) {
@@ -77,24 +77,7 @@ function Index(props) {
     for (const expense of expenseList) {
       if (!(expense.month in year)) year[expense.month] = []
 
-      // Category titles
-      const cat = getCategoryTitles(categoryList, expense.category);
-
-      year[expense.month].push({
-        id: expense.id,
-        day: expense.day,
-        date: expense.day,
-        description: expense.description,
-        details: expense.details,
-        category: expense.category,
-        categoryText: `${cat.parentCategoryTitle}: ${cat.categoryTitle}`,
-        mainCategoryText: cat.parentCategoryTitle,
-        subCategoryText: cat.categoryTitle,
-        amountPaid: expense.amountPaid,
-        amountReimbursed: expense.amountReimbursed,
-        spent: (expense.amountPaid - expense.amountReimbursed).toFixed(2),
-        recurring: expense.recurring,
-      })
+      year[expense.month].push(mapExpenseToRow(expense, categoryList))
     }
     return year;
   }
