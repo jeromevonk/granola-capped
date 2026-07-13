@@ -1,27 +1,64 @@
 # Granola (capped)
 
-Have a look at [the original repo](https://github.com/jeromevonk/granola).
+Personal/family expense tracker. Have a look at [the original repo](https://github.com/jeromevonk/granola).
 
-## Possible future improvements
+**Stack**: Next.js 16 (Pages Router) · React 18 · MUI 5 · TanStack Query 5 · Knex/PostgreSQL (Aiven) · Vercel
 
-### Performance
-- **Split `AppContext`** into `ScreenContext`, `CategoriesContext`, `VisibilityContext`, and `SearchFocusContext`. Currently all consumers re-render on any change (e.g. window resize triggers re-renders for components that only care about categories). Touches ~11 files.
-- **Hoist remaining inline `sx` objects** in `ExpensesTable.js` (toolbar, popovers, cells) and other components to module-scope constants so they keep stable identity across renders.
-- **Lazy-load `ReportTable`** via `next/dynamic` on the report page (smaller win than `EvolutionChart`, but still keeps the table out of the shared chunk).
-- **Profile the 2.8s metadata API latency** — add timing logs around the Knex query, verify indexes are used (`EXPLAIN ANALYZE`), and check Aiven SSL handshake time vs. query time.
-- **Audit remaining MUI barrel imports** (`import { Box, Container, ... } from '@mui/material'`) — mostly handled by `optimizePackageImports` in prod builds, but converting to direct imports (`import Box from '@mui/material/Box'`) removes any residual cost and is consistent with the rest of the codebase.
-- **Virtualize `ExpensesTable`** (e.g. `@tanstack/react-virtual`) if expense counts grow large — pagination is in place today, but virtualization would eliminate DOM cost regardless of page size.
+## Development
 
-### Developer experience & tooling
-- **Add TypeScript** — project is JS-only today; migrating incrementally (rename `.js` → `.tsx`, add `tsconfig.json`) would catch prop/shape bugs surfaced by the recent refactors.
-- **Add a test suite** — no tests currently. Start with Vitest + React Testing Library for components and a handful of API-route integration tests against a local Postgres.
-- **Add Prettier** with a pre-commit hook (Husky + lint-staged) for consistent formatting.
-- **Dockerize local development** — a `docker-compose.yml` with Postgres + app service would remove the "is my local DB running?" class of problems and make onboarding trivial.
-- **Pin remaining `latest` / caret-only deps** to exact versions. `package.json` was partially cleaned up, but caret ranges (`^`) on transitive-heavy libs (`next`, `@mui/x-date-pickers`, `react`) still allow silent version drift.
+```bash
+cd backend-frontend
+npm install
+npm run dev     # http://localhost:3000
+npm test        # Vitest
+npm run lint
+```
 
-### Architecture & features
-- **Migrate to the App Router** (`app/` directory) — enables React Server Components, streaming, and better data-fetching patterns. Large effort but aligned with Next.js 15's direction.
-- **Replace `react-google-charts`** with a bundle-friendlier alternative (Recharts, Visx, or ECharts) — `react-google-charts` loads Google's hosted JS at runtime, which adds a network round-trip and can't be bundled/cached.
-- **Add request-level caching** for category and year lists (React Query / SWR) — these barely change and are refetched on every navigation today.
-- **Introduce a shared API client with error handling** — current `services/*` duplicate fetch + error paths. Consolidate into a single wrapper with retry, auth-refresh, and typed responses.
-- **Add Sentry (or similar)** for error tracking in production — currently errors only surface via `alertService` toasts.
+Local Postgres: `database/docker-compose.yml` + `database/migrate_and_seed.sh`.
+
+## Modernization (July 2026)
+
+Guided by a full technical audit. Done so far:
+
+- **Server-state caching with TanStack Query** (`src/hooks/queries.js`) — data
+  is fetched once and survives navigation; mutations invalidate explicitly.
+  Stale-while-revalidate defaults (5-min staleTime + refetch on window focus)
+  keep a phone tab in sync with changes made on desktop.
+- **Security/integrity**: expenses now validate category ownership (with a
+  Vitest regression test); in-memory rate limiting on login.
+- **Dark mode** — follows system preference, toggle in the app bar, persisted.
+- **Latency diagnosed**: the old ~2.8s "metadata API" latency was cold
+  connection setup (TCP+TLS+SCRAM ≈ 3s), not queries (13.7ms server-side).
+  Root cause: Vercel functions in us-west-2 vs. Aiven in NYC (~75ms RTT).
+  Fixed `pool.min: 0`; **action**: keep Vercel Function Region on `iad1`.
+- Single source of truth for the expense API contract (`EXPENSE_COLUMNS`) and
+  for the expense view-model (`src/helpers/expense-mapper.js`).
+- Expense form survives a page reload (data now lives in the real URL).
+
+## Remaining roadmap
+
+### Phase 3 — structural refactoring
+- Split `ExpensesTable.js` (859 lines) into toolbar/filters + a
+  `useExpenseTableShortcuts` hook — this also clears the remaining 11
+  pre-existing `react-hooks` lint errors.
+- Incremental TypeScript, starting with the expense/category/stats shapes.
+- Expand the test suite: pure logic first (`validate.js`,
+  `chart-data-manipulation.js`), then API routes against local Postgres
+  (December→January recurring copy is the tricky case), then `ExpenseForm`.
+
+### Phase 4 — UX & features
+- Inline search on mobile; a usable Report fallback on small screens.
+- Keyboard-shortcut discovery overlay (`?`).
+- Budget per category (reuses the existing report queries).
+- Reminder for recurring expenses not yet copied to the current month.
+- Replace `react-google-charts` with a bundleable alternative (it loads
+  Google-hosted JS at runtime and doesn't follow the MUI theme).
+
+### Phase 5 — AI (only where it removes real friction)
+- Category suggestion from the user's own expense history.
+- Natural-language search translated to the existing stats/expenses params.
+
+### Minor / opportunistic
+- Prettier + pre-commit hook; pin caret-ranged deps; Sentry (or similar);
+  lazy-load `ReportTable`; virtualize `ExpensesTable` if data grows;
+  App Router migration (large, optional).
