@@ -59,7 +59,10 @@ const config = {
       ca: AIVEN_CA_CERT
     }
   },
-  pool: { min: 2, max: 10, idleTimeoutMillis: 30000 }
+  // min: 0 — on serverless, min > 0 eagerly opens extra connections at
+  // cold start (~3s each against Aiven); one on-demand connection is
+  // enough and is reused via the globalThis cache below
+  pool: { min: 0, max: 10, idleTimeoutMillis: 30000 }
 }
 
 // --------------------------------------------
