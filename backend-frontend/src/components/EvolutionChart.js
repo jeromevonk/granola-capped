@@ -8,7 +8,7 @@ function EvolutionChart({ data, options, evolutionCategory, eventCallback = () =
   if (data.length === 0) {
     return (
       <Box>
-        'Loading...'
+        Loading...
       </Box>
     )
   } else if (data.length === 1) {

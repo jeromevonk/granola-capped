@@ -5,26 +5,17 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { getYear, parse } from 'date-fns'
-import { expenseService } from 'src/services'
+import { useYears } from 'src/hooks/queries'
 
 export default function YearPicker(props) {
   const { handleChange, year } = props;
-  const [years, setYears] = React.useState({
-    min: 2012,
-    max: new Date().getFullYear()
-  });
 
-  React.useEffect(() => {
-    expenseService.getYears()
-      .then((data) => {
-        if (data.length > 0) {
-          setYears({
-            min: data[0],
-            max: data[data.length - 1]
-          })
-        }
-      });
-  }, []);
+  // Shared query — every YearPicker instance reads the same cache entry
+  const { data: yearList } = useYears();
+
+  const years = (yearList && yearList.length > 0)
+    ? { min: yearList[0], max: yearList[yearList.length - 1] }
+    : { min: 2012, max: new Date().getFullYear() };
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>

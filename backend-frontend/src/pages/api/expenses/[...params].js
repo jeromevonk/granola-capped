@@ -40,7 +40,12 @@ async function putExpense(req, res) {
     return res.status(400).json({ message: msg });
   }
 
-  const updated = await expenseRepo.updateExpense(req.auth.sub, expenseId, expense);
+  let updated;
+  try {
+    updated = await expenseRepo.updateExpense(req.auth.sub, expenseId, expense);
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
 
   // If no expense was updated, return 404
   if (updated.length === 0) return res.status(404).json({ message: `No expense found with id=${expenseId} for this user` });

@@ -7,15 +7,19 @@ import { useRouter, withRouter } from 'next/router'
 import ExpensesTable from '../components/ExpensesTable';
 import DateSelector from '../components/DateSelector';
 import { expenseService, alertService } from 'src/services';
-import { getCustomDateString, getCategoryTitles, useKeyPress } from 'src/helpers'
+import { getCustomDateString, mapExpenseToRow, toExpenseFormQuery, useKeyPress } from 'src/helpers'
+import { useCategories, useExpenses, useInvalidateExpenses } from 'src/hooks/queries';
 import { AppContext } from 'src/pages/_app';
 
 function Index(props) {
-  // Context
+  // Context (UI state)
   const context = React.useContext(AppContext);
-  const categories = context?.categories.all;
   const largeScreen = context?.largeScreen;
   const [searchFocus] = context?.searchFocus || false;
+
+  // Server state
+  const { categories, isPending: categoriesPending } = useCategories();
+  const invalidateExpenses = useInvalidateExpenses();
 
   // Router
   const router = useRouter();
@@ -63,48 +67,26 @@ function Index(props) {
     subCategory: props.router.query.subCategory
   };
 
-  // -------------------------------------------------------
-  // 'expenses' state is an object which holds
-  // data for every year the users picks. 
-  // Expenses are grouped by year and month.
-  // Every month is an array of expenses
-  // -------------------------------------------------------
-  const [expenses, setExpenses] = React.useState({});
-  const [isLoading, setIsLoading] = React.useState(false);
+  // -----------------------------------------------------
+  // Expenses for the selected year come from the query
+  // cache — data is fetched once per year and survives
+  // page navigation; mutations invalidate it explicitly
+  // -----------------------------------------------------
+  const { data: yearExpenses, isPending: expensesPending } = useExpenses(selectedDate.year);
 
-  const groupByMonth = (expenseList, categoryList) => {
-    const year = {}
-    for (const expense of expenseList) {
-      if (!(expense.month in year)) year[expense.month] = []
+  // Rows for the selected month, in the shape ExpensesTable consumes
+  const monthRows = React.useMemo(() => {
+    if (!yearExpenses || categories.length === 0) return [];
 
-      // Category titles
-      const cat = getCategoryTitles(categoryList, expense.category);
+    return yearExpenses
+      .filter(expense => expense.month === selectedDate.month)
+      .map(expense => mapExpenseToRow(expense, categories));
+  }, [yearExpenses, categories, selectedDate.month]);
 
-      year[expense.month].push({
-        id: expense.id,
-        day: expense.day,
-        date: expense.day,
-        description: expense.description,
-        details: expense.details,
-        category: expense.category,
-        categoryText: `${cat.parentCategoryTitle}: ${cat.categoryTitle}`,
-        mainCategoryText: cat.parentCategoryTitle,
-        subCategoryText: cat.categoryTitle,
-        amountPaid: expense.amountPaid,
-        amountReimbursed: expense.amountReimbursed,
-        spent: (expense.amountPaid - expense.amountReimbursed).toFixed(2),
-        recurring: expense.recurring,
-      })
-    }
-    return year;
-  }
+  const isLoading = expensesPending || categoriesPending;
 
-  const findExpense = (target, year, month) => {
-    return expenses[year][month].find(item => item.id === target);
-  }
-
-  const filterNotDeleted = (arr, response) => {
-    return arr.filter(item => !response.deleted.includes(item.id))
+  const findExpense = (target) => {
+    return monthRows.find(item => item.id === target);
   }
 
   // -------------------------------------------
@@ -114,133 +96,49 @@ function Index(props) {
     if (action === 'delete') {
       expenseService.deleteExpenses(selected)
         .then((response) => {
-          setExpenses(
-            prev => {
-              // Narrow the search by providing year and month
-              // Filter the ones not deleted
-              const newArray = filterNotDeleted(prev[selectedDate.year][selectedDate.month], response);
-              prev[selectedDate.year][selectedDate.month] = newArray;
-
-              return {
-                ...prev
-              };
-            }
-          );
-          return response;
-        })
-        .then((response) => {
+          invalidateExpenses();
           alertService.success(`${response.deleted.length} expense(s) deleted, ${response.failed.length} failed`);
         })
         .catch(err => alertService.error(`API error: ${err}`));
     } else if (action === 'edit' || action === 'duplicate') {
       // Find expense
-      const exp = findExpense(selected[0], selectedDate.year, selectedDate.month);
+      const exp = findExpense(selected[0]);
 
+      // The query goes in the real URL so the form survives a reload
       if (action === 'duplicate') {
         // Do not add year and month, user will probably change it
-
-        // Push to new expense page with expense data
         router.push({
           pathname: '/new-expense',
-          query: exp,
-        }, '/new-expense');
+          query: toExpenseFormQuery(exp),
+        });
       } else {
-        // Add month and year
-        exp.year = selectedDate.year;
-        exp.month = selectedDate.month;
-
         router.push({
           pathname: '/edit-expense',
-          query: exp,
-        }, '/edit-expense');
+          query: {
+            ...toExpenseFormQuery(exp),
+            id: exp.id,
+            year: selectedDate.year,
+            month: selectedDate.month,
+          },
+        });
       }
     } else if (action === 'copy') {
       expenseService.copyRecurringToNextMonth(selectedDate.year, selectedDate.month, options.keepAmounts)
         .then((response) => {
-
           if (response.length === 0) {
             alertService.error('Nothing was copied');
             return;
           }
 
-          // Recurring expenses will be copied to "next month": figure out the target year and month
-          const targetYear = response[0].year
-          const targetMonth = response[0].month
-
-          // Group and format new data
-          const groupedMonth = groupByMonth(response, categories);
-          const toAdd = groupedMonth[targetMonth];
-
-          if (!expenses[targetYear]) {
-            // No data for target year.
-            // It might be because there are no expenses (which would be ok)
-            // or because they haven't been fetched yet (so we can't concat).
-            // Also, it might be the case of a year change
-            // and the next year might not be showing in the year picker.
-            // A hack to fix this is to reload the whole page and let the
-            // user and effects do their job.
-            router.reload(globalThis.location.pathname);
-
-            return;
-          }
-
-          // Add to state
-          setExpenses(prev => {
-            // Get data for target year
-            const yearData = prev[targetYear];
-
-            // Concat data
-            const monthData = yearData[targetMonth] || [];
-            yearData[targetMonth] = [...monthData, ...toAdd];
-
-            return {
-              ...prev,
-              [targetYear]: yearData
-            }
-          })
-        })
-        .then(() => {
+          // The copies live in "next month" — refresh the cache and
+          // jump straight to where they landed
+          invalidateExpenses();
+          setSelectedDate({ year: response[0].year, month: response[0].month });
           alertService.success('Copied');
         })
         .catch(err => alertService.error(`API error: ${err}`));
     }
   }
-
-  // -----------------------------------------------------
-  // Get expenses via API
-  // only fetch data for the selected year if there is
-  // no prior data
-  // -----------------------------------------------------
-  React.useEffect(() => {
-    // If there's already data, return early
-    if (selectedDate.year in expenses) return;
-
-    // If we do not have the categories yet, do not bother getting the data
-    if (categories.length === 0) return;
-
-    // Set flags
-    let isSubscribed = true;
-    setIsLoading(true);
-
-    // Make request
-    expenseService.getExpenses(selectedDate.year)
-      .then(expenseList => {
-        if (isSubscribed) {
-          setExpenses(prev => ({
-            ...prev,
-            [selectedDate.year]: groupByMonth(expenseList, categories)
-          }))
-        }
-        setIsLoading(false);
-      })
-      .catch(err => alertService.error(`API error: ${err}`));
-    return () => {
-      isSubscribed = false;
-      setIsLoading(false);
-    }
-    // We do not want to include expenses as a dependency here, so
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDate.year, categories]);
 
   return (
     <Container
@@ -266,7 +164,7 @@ function Index(props) {
                 <ExpensesTable
                   handleAction={handleAction}
                   title={getCustomDateString(selectedDate.year, selectedDate.month, largeScreen.width)}
-                  expenses={expenses[selectedDate.year]?.[selectedDate.month]}
+                  expenses={monthRows}
                   filter={initialFilter}
                 />
               )

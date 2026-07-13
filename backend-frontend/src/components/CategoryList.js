@@ -2,7 +2,8 @@ import * as React from 'react';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-import { AppContext } from 'src/pages/_app';
+import { useQueryClient } from '@tanstack/react-query';
+import { useCategories } from 'src/hooks/queries';
 import { getSubCategories } from 'src/helpers'
 
 import List from '@mui/material/List';
@@ -20,10 +21,10 @@ import { categoryService, alertService } from "src/services";
 
 export default function CategoryList() {
   // Categories and sub-categories
-  const context = React.useContext(AppContext);
-  const categories = context?.categories.all;
-  const setCategories = context?.categories.setCategories;
-  const mainCategories = context?.categories.mainCategories;
+  const { categories, mainCategories } = useCategories();
+  const queryClient = useQueryClient();
+
+  const refreshCategories = () => queryClient.invalidateQueries({ queryKey: ['categories'] });
 
   // States
   const [selected, setSelected] = React.useState({ mainCategory: 0, subCategory: null });
@@ -75,11 +76,11 @@ export default function CategoryList() {
   const handleCreateDialogSubmit = (newCategory) => {
     handleCreateDialogClose();
     categoryService.createCategory(newCategory)
-      .then((response) => {
+      .then(() => {
         alertService.success(`Category '${newCategory.title}' created`);
-        categoryService.addCategoryToState(response[0], setCategories);
+        refreshCategories();
       })
-      .catch((err => console.error(err)));
+      .catch(err => alertService.error(`API error: ${err.message}`));
   }
 
   // --------------------------------------------
@@ -115,11 +116,11 @@ export default function CategoryList() {
   const handleRenameDialogSubmit = (category, newTitle) => {
     handleRenameDialogClose();
     categoryService.editCategory(category.id, newTitle)
-      .then((response) => {
+      .then(() => {
         alertService.success(`Category '${category.title} 'renamed to '${newTitle}'`);
-        categoryService.renameCategoryInState(response[0], setCategories);
+        refreshCategories();
       })
-      .catch((err => console.error(err)));
+      .catch(err => alertService.error(`API error: ${err.message}`));
   }
 
   // --------------------------------------------
@@ -158,7 +159,13 @@ export default function CategoryList() {
     categoryService.deleteCategory(category.id)
       .then(() => {
         alertService.success(`Category '${category.title}' deleted`);
-        categoryService.refetchCategories(setCategories);
+        refreshCategories();
+
+        // Deleting a category cascades to its expenses, so every
+        // expense-derived cache is stale now
+        queryClient.invalidateQueries({ queryKey: ['expenses'] });
+        queryClient.invalidateQueries({ queryKey: ['years'] });
+        queryClient.invalidateQueries({ queryKey: ['stats'] });
 
         // Must 'unselect' if we deleted a mainCategory
         if (!category.parentId) {
@@ -167,7 +174,7 @@ export default function CategoryList() {
           setSelected(prev => ({ ...prev, subCategory: null }));
         }
       })
-      .catch((err => console.error(err)));
+      .catch(err => alertService.error(`API error: ${err.message}`));
   }
 
   // --------------------------------------------

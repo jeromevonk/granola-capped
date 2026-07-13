@@ -13,21 +13,19 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import InputLabel from '@mui/material/InputLabel';
 import { getSubCategories, sortTitleAlphabetically } from 'src/helpers'
-import { AppContext } from 'src/pages/_app';
+import { useCategories } from 'src/hooks/queries';
 
 export default function EvolutionSelector(props) {
   const { handleChange, hideEmptyMonths, evolutionDateType, categoryType } = props;
 
-  // Context
-  const context = React.useContext(AppContext);
-  const categories = context?.categories.all;
+  // Server state
+  const { categories, mainCategories } = useCategories();
 
   // States for selects
   const [mainCategory, setMainCategory] = React.useState('');
   const [subCategory, setSubCategory] = React.useState('');
 
-  // Categories and sub-categories
-  const mainCategories = context?.categories.mainCategories
+  // Sub-categories for the selected main category
   const subCategories = getSubCategories(categories, mainCategory).sort(sortTitleAlphabetically);
 
   return (

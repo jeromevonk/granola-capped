@@ -3,6 +3,7 @@ export const postgresqlRepo = {
   createCategory,
   editCategory,
   deleteCategory,
+  categoryExistsForUser,
   findUser,
   deleteUser,
   getExpenses,
@@ -76,6 +77,21 @@ const knex = globalThis.__knex ?? (globalThis.__knex = require('knex')(config));
 // Get current year
 const CURRENT_YEAR = new Date().getFullYear();
 
+// Canonical expense column list (with camelCase aliases), shared by
+// every select/returning so the API contract has a single source of truth
+const EXPENSE_COLUMNS = [
+  'id',
+  'year',
+  'month',
+  'day',
+  'description',
+  'details',
+  'category',
+  'recurring',
+  'amount_paid as amountPaid',
+  'amount_reimbursed as amountReimbursed',
+];
+
 // ------------------------------------------
 // Categories
 // ------------------------------------------
@@ -115,6 +131,15 @@ async function deleteCategory(user, categoryId) {
     .del();
 }
 
+async function categoryExistsForUser(user, categoryId) {
+  const row = await knex('category')
+    .select('id')
+    .where({ user_id: user, id: categoryId })
+    .first();
+
+  return !!row;
+}
+
 // ------------------------------------------
 // User
 // ------------------------------------------
@@ -137,17 +162,7 @@ async function deleteUser(user) {
 // ------------------------------------------
 async function getExpenses(user, expenseId = null, year = null, month = null) {
   return knex
-    .select(
-      'id',
-      'year',
-      'month',
-      'day',
-      'description',
-      'details',
-      'category',
-      'recurring',
-      'amount_paid as amountPaid',
-      'amount_reimbursed as amountReimbursed')
+    .select(...EXPENSE_COLUMNS)
     .from('expense')
     .where({ user_id: user })
     .modify((queryBuilder) => {
@@ -176,17 +191,7 @@ async function getYears(user) {
 
 async function searchExpenses(user, search) {
   return knex
-    .select(
-      'id',
-      'year',
-      'month',
-      'day',
-      'description',
-      'details',
-      'category',
-      'recurring',
-      'amount_paid as amountPaid',
-      'amount_reimbursed as amountReimbursed')
+    .select(...EXPENSE_COLUMNS)
     .from('expense')
     .where({ user_id: user })
     .andWhere(queryBuilder => {
@@ -209,18 +214,7 @@ async function createExpense(user, expense) {
       amount_reimbursed: expense.amountReimbursed,
       category: expense.category,
       recurring: expense.recurring,
-    }, [
-      'id',
-      'year',
-      'month',
-      'day',
-      'description',
-      'details',
-      'amount_paid as amountPaid',
-      'amount_reimbursed as amountReimbursed',
-      'category',
-      'recurring'
-    ]);
+    }, EXPENSE_COLUMNS);
 }
 
 async function copyRecurringToNextMonth(user, year, month, keepAmounts = true) {
@@ -241,18 +235,7 @@ async function copyRecurringToNextMonth(user, year, month, keepAmounts = true) {
           keepAmounts ? 'amount_reimbursed' : 0)
         .from('expense')
         .where({ user_id: user, year: year, month: month, recurring: true })
-    }, [
-      'id',
-      'year',
-      'month',
-      'day',
-      'description',
-      'details',
-      'amount_paid as amountPaid',
-      'amount_reimbursed as amountReimbursed',
-      'category',
-      'recurring'
-    ]);
+    }, EXPENSE_COLUMNS);
 }
 
 async function updateExpense(user, expenseId, expense) {
@@ -268,18 +251,7 @@ async function updateExpense(user, expenseId, expense) {
       amount_reimbursed: expense.amountReimbursed,
       category: expense.category,
       recurring: expense.recurring,
-    }, [
-      'id',
-      'year',
-      'month',
-      'day',
-      'description',
-      'details',
-      'amount_paid as amountPaid',
-      'amount_reimbursed as amountReimbursed',
-      'category',
-      'recurring'
-    ]);
+    }, EXPENSE_COLUMNS);
 }
 
 async function deleteExpense(user, expenseId) {

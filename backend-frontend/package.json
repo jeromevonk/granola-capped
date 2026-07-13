@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "test": "vitest run",
     "post-update": "echo \"codesandbox preview only, need an update\" && yarn upgrade --latest"
   },
   "dependencies": {
@@ -19,6 +20,7 @@
     "@mui/icons-material": "5.11.0",
     "@mui/material": "5.11.6",
     "@mui/x-date-pickers": "^5.0.0-beta.2",
+    "@tanstack/react-query": "^5.101.2",
     "bcryptjs": "^2.4.3",
     "date-fns": "^2.29.1",
     "express-jwt": "^8.2.1",
@@ -37,6 +39,7 @@
   },
   "devDependencies": {
     "eslint": "^9.39.2",
-    "eslint-config-next": "^16.2.6"
+    "eslint-config-next": "^16.2.6",
+    "vitest": "^4.1.10"
   }
 }
