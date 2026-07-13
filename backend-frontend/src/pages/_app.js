@@ -8,7 +8,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { CacheProvider } from '@emotion/react';
 import { QueryClient, QueryClientProvider, QueryCache } from '@tanstack/react-query';
-import theme from '../theme';
+import { getTheme } from '../theme';
 import createEmotionCache from '../createEmotionCache';
 
 const roboto = Roboto({
@@ -64,6 +64,36 @@ export default function MyApp(props) {
   const [largeScreen, setLargeScreen] = useState({ width: true, height: true });
   const [visibility, setVisibility] = useState(true);
   const [searchFocus, setSearchFocus] = useState(false);
+
+  // ----------------------------------------
+  // Light/dark mode: stored preference wins,
+  // otherwise follow the system setting.
+  // Starts as 'light' to match the prerendered
+  // HTML and switches right after hydration.
+  // ----------------------------------------
+  const [themeMode, setThemeMode] = useState('light');
+
+  React.useEffect(() => {
+    const stored = localStorage.getItem('themeMode');
+    const preferred = (stored === 'dark' || stored === 'light')
+      ? stored
+      : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+
+    if (preferred !== 'light') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time sync with stored/system preference after hydration
+      setThemeMode(preferred);
+    }
+  }, []);
+
+  const toggleThemeMode = React.useCallback(() => {
+    setThemeMode(prev => {
+      const next = prev === 'light' ? 'dark' : 'light';
+      localStorage.setItem('themeMode', next);
+      return next;
+    });
+  }, []);
+
+  const muiTheme = useMemo(() => getTheme(themeMode), [themeMode]);
 
   // ----------------------------------------
   // Set listeners for screen change
@@ -145,8 +175,12 @@ export default function MyApp(props) {
     searchFocus: [
       searchFocus,
       setSearchFocus
+    ],
+    themeMode: [
+      themeMode,
+      toggleThemeMode
     ]
-  }), [largeScreen, visibility, searchFocus]);
+  }), [largeScreen, visibility, searchFocus, themeMode, toggleThemeMode]);
 
   return (
     <CacheProvider value={emotionCache}>
@@ -154,7 +188,7 @@ export default function MyApp(props) {
         <meta name="viewport" content="initial-scale=1, width=device-width" />
         <title>Granola</title>
       </Head>
-      <ThemeProvider theme={theme}>
+      <ThemeProvider theme={muiTheme}>
         {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
         <CssBaseline />
         <QueryClientProvider client={queryClient}>

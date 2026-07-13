@@ -2,6 +2,7 @@ import * as React from 'react';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import LinearProgress from '@mui/material/LinearProgress';
+import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/router'
 import dynamic from 'next/dynamic';
 const EvolutionChart = dynamic(() => import('../components/EvolutionChart'), { ssr: false });
@@ -12,6 +13,12 @@ import { getCategoryTitles, getParentCategoryId, capitalizeFirstLetter, manipula
 export default function Evolution() {
   // Server state
   const { categories } = useCategories();
+
+  // Google Charts doesn't follow the MUI theme — build its options
+  // from the current palette so dark mode doesn't show a white box
+  const muiTheme = useTheme();
+  const isDark = muiTheme.palette.mode === 'dark';
+  const chartTextStyle = { color: isDark ? '#e0e0e0' : '#333333' };
 
   // Router
   const router = useRouter();
@@ -128,9 +135,16 @@ export default function Evolution() {
                 data={chartData}
                 options={{
                   title: chartTitle,
-                  vAxis: { minValue: 0 },
+                  backgroundColor: 'transparent',
+                  titleTextStyle: chartTextStyle,
+                  hAxis: { textStyle: chartTextStyle },
+                  vAxis: {
+                    minValue: 0,
+                    textStyle: chartTextStyle,
+                    gridlines: { color: isDark ? '#444444' : '#cccccc' }
+                  },
                   legend: { position: "none" },
-                  colors: ['008080']
+                  colors: [isDark ? '26a69a' : '008080']
                 }}
                 eventCallback={eventCallback}
                 evolutionCategory={selectedOptions.evolutionCategory}

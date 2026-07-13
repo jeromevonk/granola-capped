@@ -16,6 +16,8 @@ import ListSubheader from '@mui/material/ListSubheader';
 import AttachMoneyOutlined from '@mui/icons-material/AttachMoneyOutlined';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
 import SearchBar from '../components/SearchBar';
 import { useRouter } from 'next/router'
 import { useQueryClient } from '@tanstack/react-query';
@@ -63,6 +65,7 @@ const ResponsiveAppBar = () => {
   const context = React.useContext(AppContext);
   const [visibility, setVisibility] = context?.visibility || false;
   const {1: setSearchFocus} = context?.searchFocus || false;
+  const [themeMode, toggleThemeMode] = context?.themeMode || ['light', () => {}];
   const queryClient = useQueryClient();
 
   // States
@@ -300,6 +303,18 @@ const ResponsiveAppBar = () => {
           <Box>
             <IconButton aria-label="visible" onClick={toggleVisibility} sx={{ marginRight: 1 }}>
               {visibility ? <VisibilityOffIcon style={{ color: '#ffffff' }} /> : <VisibilityIcon style={{ color: '#ffffff' }} />}
+            </IconButton>
+          </Box>
+
+          { /*
+            // ----------------------------------------
+            // Light/dark mode
+            // ----------------------------------------
+            */
+          }
+          <Box>
+            <IconButton aria-label="toggle light/dark mode" onClick={toggleThemeMode} sx={{ marginRight: 1 }}>
+              {themeMode === 'dark' ? <Brightness7Icon style={{ color: '#ffffff' }} /> : <Brightness4Icon style={{ color: '#ffffff' }} />}
             </IconButton>
           </Box>
 

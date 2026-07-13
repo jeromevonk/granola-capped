@@ -1,14 +1,16 @@
 import { createTheme } from '@mui/material/styles';
 import { red } from '@mui/material/colors';
 
-// Create a theme instance.
-const theme = createTheme({
+// MUI derives every component's colors from palette.mode; we only tune
+// the brand colors, which need lighter tones on dark backgrounds
+const getTheme = (mode) => createTheme({
   palette: {
+    mode,
     primary: {
-      main: '#008080',
+      main: mode === 'dark' ? '#26a69a' : '#008080',
     },
     secondary: {
-      main: '#0e609e',
+      main: mode === 'dark' ? '#64b5f6' : '#0e609e',
     },
     error: {
       main: red.A400,
@@ -16,4 +18,8 @@ const theme = createTheme({
   },
 });
 
+// Static light theme — used by _document.js for the theme-color meta tag
+const theme = getTheme('light');
+
 export default theme;
+export { getTheme };
