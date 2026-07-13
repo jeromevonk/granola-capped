@@ -12,6 +12,7 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import Divider from '@mui/material/Divider';
+import ListItemIcon from '@mui/material/ListItemIcon';
 import ListSubheader from '@mui/material/ListSubheader';
 import AttachMoneyOutlined from '@mui/icons-material/AttachMoneyOutlined';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -309,10 +310,12 @@ const ResponsiveAppBar = () => {
           { /*
             // ----------------------------------------
             // Light/dark mode
+            // On small screens this lives inside the
+            // user menu to keep the app bar uncluttered
             // ----------------------------------------
             */
           }
-          <Box>
+          <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
             <IconButton aria-label="toggle light/dark mode" onClick={toggleThemeMode} sx={{ marginRight: 1 }}>
               {themeMode === 'dark' ? <Brightness7Icon style={{ color: '#ffffff' }} /> : <Brightness4Icon style={{ color: '#ffffff' }} />}
             </IconButton>
@@ -351,6 +354,16 @@ const ResponsiveAppBar = () => {
             >
               <ListSubheader>{user.username}</ListSubheader>
               <Divider />
+              {/* On small screens the theme toggle lives here */}
+              <MenuItem
+                onClick={toggleThemeMode}
+                sx={{ display: { xs: 'flex', md: 'none' } }}
+              >
+                <ListItemIcon>
+                  {themeMode === 'dark' ? <Brightness7Icon fontSize="small" /> : <Brightness4Icon fontSize="small" />}
+                </ListItemIcon>
+                <Typography textAlign="center">{themeMode === 'dark' ? 'Light mode' : 'Dark mode'}</Typography>
+              </MenuItem>
               {settings.map((setting) => (
                 <MenuItem key={setting.title} onClick={() => handleUserMenuClick(setting)}>
                   <Typography textAlign="center">{setting.title}</Typography>
