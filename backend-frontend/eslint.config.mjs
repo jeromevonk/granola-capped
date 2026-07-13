@@ -7,9 +7,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default defineConfig([{
-    extends: [...nextCoreWebVitals],
+  extends: [...nextCoreWebVitals],
 
-    rules: {
-        indent: ["error", 2],
-    },
+  rules: {
+    indent: ["error", 2],
+  },
 }]);
