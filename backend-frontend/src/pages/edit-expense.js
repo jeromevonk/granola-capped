@@ -5,6 +5,10 @@ import { withRouter } from 'next/router'
 import ExpenseForm from '../components/ExpenseForm';
 
 function EditExpense(props) {
+  // On a full page reload the query string is parsed after the first
+  // render — wait for it so the form initializes with the expense data
+  if (!props.router.isReady) return null;
+
   const {id, ...expense} = props.router.query;
 
   return (

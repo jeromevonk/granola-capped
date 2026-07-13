@@ -4,7 +4,7 @@ import { Container, Box, Stack, Fab, LinearProgress } from '@mui/material';
 import { useRouter, withRouter } from 'next/router'
 import ExpensesTable from '../components/ExpensesTable';
 import { expenseService, alertService } from 'src/services';
-import { mapExpenseToRow, parseDate } from 'src/helpers'
+import { mapExpenseToRow, toExpenseFormQuery, parseDate } from 'src/helpers'
 import { useCategories, useExpenseSearch, useInvalidateExpenses } from 'src/hooks/queries';
 import { AppContext } from 'src/pages/_app';
 import SearchIcon from '@mui/icons-material/Search';
@@ -49,24 +49,25 @@ function Search(props) {
       // Find expense (there should be only 1 selected, so use first position of the list)
       const exp = findExpense(selected[0]);
 
+      // The query goes in the real URL so the form survives a reload
       if (action === 'duplicate') {
         // Do not add year and month, user will probably change it
-
-        // Push to new expense page with expense data
         router.push({
           pathname: '/new-expense',
-          query: exp,
-        }, '/new-expense');
+          query: toExpenseFormQuery(exp),
+        });
       } else {
-        // Add month and year
         const parsed = parseDate(exp.date);
-        exp.year = parsed.year;
-        exp.month = parsed.month;
 
         router.push({
           pathname: '/edit-expense',
-          query: exp,
-        }, '/edit-expense');
+          query: {
+            ...toExpenseFormQuery(exp),
+            id: exp.id,
+            year: parsed.year,
+            month: parsed.month,
+          },
+        });
       }
     }
   }

@@ -2,6 +2,7 @@ import { getCategoryTitles } from './category-helper';
 
 export {
   mapExpenseToRow,
+  toExpenseFormQuery,
 };
 
 // -------------------------------------------------------------------
@@ -28,6 +29,23 @@ function mapExpenseToRow(expense, categories, dateStyle = 'day') {
     amountReimbursed: expense.amountReimbursed,
     spent: (expense.amountPaid - expense.amountReimbursed).toFixed(2),
     recurring: expense.recurring,
+  };
+}
+
+// -------------------------------------------------------------------
+// Build the query object pushed to /new-expense and /edit-expense.
+// It goes in the real URL (not masked), so the form survives a page
+// reload — only the fields the form consumes, no derived ones.
+// -------------------------------------------------------------------
+function toExpenseFormQuery(row) {
+  return {
+    day: row.day ?? '',
+    description: row.description,
+    details: row.details || '',
+    amountPaid: row.amountPaid,
+    amountReimbursed: row.amountReimbursed,
+    category: row.category,
+    recurring: row.recurring,
   };
 }
 

@@ -26,10 +26,16 @@ import { getParentCategoryId, getSubCategories } from 'src/helpers'
 import { useCategories, useInvalidateExpenses } from 'src/hooks/queries';
 
 const getInitialFormData = (expense, categories) => {
+  if (!expense.category) return { mainCategory: '', subCategory: '' };
+
+  // After a full page reload, query-string values arrive as strings —
+  // Number() them so they match the numeric Select option values.
+  // The ?? '' matters: while categories are still loading the parent
+  // lookup yields undefined, and a MUI Select that first renders with
+  // value=undefined turns uncontrolled and ignores later values.
   return {
-    // Come up with default category using props
-    mainCategory: expense.category ? getParentCategoryId(categories, Number(expense.category)) : '',
-    subCategory: expense.category ? expense.category : '',
+    mainCategory: getParentCategoryId(categories, Number(expense.category)) ?? '',
+    subCategory: Number(expense.category),
   }
 }
 
