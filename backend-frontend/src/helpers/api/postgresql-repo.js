@@ -69,8 +69,10 @@ const config = {
 // For local development, remove the SLL config
 // But if testing locally with production DB
 // comment out the code
+// 'test' covers vitest integration runs against
+// the local granola_test database
 // --------------------------------------------
-if (process.env.NODE_ENV == 'development') {
+if (process.env.NODE_ENV == 'development' || process.env.NODE_ENV == 'test') {
   delete config.connection.ssl;
 }
 
@@ -212,7 +214,8 @@ async function createExpense(user, expense) {
       month: expense.month,
       day: expense.day,
       description: expense.description.trim(),
-      details: expense.details.trim(),
+      // details is nullable (validated as null-or-string upstream)
+      details: expense.details ? expense.details.trim() : null,
       amount_paid: expense.amountPaid,
       amount_reimbursed: expense.amountReimbursed,
       category: expense.category,

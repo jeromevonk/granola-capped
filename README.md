@@ -9,12 +9,16 @@ Personal/family expense tracker. Have a look at [the original repo](https://gith
 ```bash
 cd backend-frontend
 npm install
-npm run dev     # http://localhost:3000
-npm test        # Vitest
+npm run dev                # http://localhost:3000
+npm test                   # unit tests (Vitest)
+npm run test:integration   # repo tests against local Postgres (below)
 npm run lint
 ```
 
 Local Postgres: `database/docker-compose.yml` + `database/migrate_and_seed.sh`.
+Integration tests use a separate `granola_test` database — create it once with
+`database/setup_test_db.sh`.
+
 
 ## Modernization (July 2026)
 
