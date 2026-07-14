@@ -116,11 +116,11 @@ function ReportTable(props) {
   const [order, setOrder] = React.useState('desc');
   const [orderBy, setOrderBy] = React.useState('year');
   const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(largeScreen.height ? 20 : 8);
 
-  React.useEffect(() => {
-    setRowsPerPage(largeScreen.height ? 20 : 8)
-  }, [largeScreen.height]);
+  // Rows per page: derived from screen height until the user picks a
+  // value explicitly — then the explicit choice wins
+  const [rowsPerPageOverride, setRowsPerPageOverride] = React.useState(null);
+  const rowsPerPage = rowsPerPageOverride ?? (largeScreen.height ? 20 : 8);
 
   const rows = props.data || [];
   const numMonths = props.numMonths;
@@ -149,7 +149,7 @@ function ReportTable(props) {
   };
 
   const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
+    setRowsPerPageOverride(parseInt(event.target.value, 10));
     setPage(0);
   };
 

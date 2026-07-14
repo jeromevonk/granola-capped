@@ -3,5 +3,4 @@ export * from './chart-data-manipulation';
 export * from './expense-mapper';
 export * from './date-helper';
 export * from './fetch-wrapper';
-export * from './use-key-press';
 export * from './utils';

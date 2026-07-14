@@ -1,467 +1,20 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import { alpha, styled } from '@mui/material/styles';
-import { Delete as DeleteIcon, ContentCopy as ContentCopyIcon, Edit as EditIcon, DoubleArrow as DoubleArrowIcon, FilterAlt, FilterAltOff } from '@mui/icons-material';
-import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TableSortLabel, Toolbar, Typography, Paper, Popover } from '@mui/material';
+import { styled } from '@mui/material/styles';
+import { Box, Table, TableBody, TableCell, TableContainer, TablePagination, TableRow, Paper } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
-import IconButton from '@mui/material/IconButton';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
-import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormLabel from '@mui/material/FormLabel';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import Select from '@mui/material/Select';
 import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
-import CloseIcon from '@mui/icons-material/Close';
-import Stack from '@mui/material/Stack';
-import { visuallyHidden } from '@mui/utils';
 import { AppContext } from 'src/pages/_app';
 import { useCategories } from 'src/hooks/queries';
+import { useKeydown } from 'src/hooks/use-keydown';
+import ExpensesTableToolbar from './ExpensesTableToolbar';
+import ExpensesTableHead from './ExpensesTableHead';
 import {
   getCategoryTitles,
   customlocaleString,
   getParentCategoryId,
-  sortTitleAlphabetically,
   getComparator,
-  useKeyPress
 } from 'src/helpers'
-import theme from 'src/theme';
-
-const getTotalString = (expensesSum, largeScreen, numSelected) => {
-  let totalStr = '';
-  if (largeScreen.width) {
-    totalStr = numSelected > 0 ? `Selected total: $ ${expensesSum}` : `Total: $ ${expensesSum}`;
-  } else {
-    totalStr = `R$ ${expensesSum}`
-  }
-
-  return totalStr;
-}
-
-const ExpensesTableToolbar = (props) => {
-  const { selected, title, setSelected, filter, setFilter, handleAction, expensesSum, filterable, largeScreen } = props;
-  const numSelected = selected.length;
-
-  // ----------------------------------------------------
-  // Filters
-  // ----------------------------------------------------
-  let availableCategories = [];
-  let availableSubCategories = [];
-  for (let [key, value] of Object.entries(filterable)) {
-    // The key represents the main category
-    const [cat, catTitle] = key.split('-');
-    availableCategories.push({
-      id: cat,
-      title: catTitle
-    });
-
-    // If mainCategory filter is not selected
-    // or if it is selected, but this is the selected category
-    // then add the subCategories to the list
-    if (cat == 0 || cat == filter.mainCategory) {
-      // The value (array) represents the subcategories
-      for (const item of value) {
-        availableSubCategories.push({
-          id: item.id,
-          title: item.title
-        });
-      }
-    }
-  }
-
-  // Sort
-  availableCategories = availableCategories.sort(sortTitleAlphabetically);
-  availableSubCategories = availableSubCategories.sort(sortTitleAlphabetically);
-
-  const getFilterIcon = () => {
-    return filter.mainCategory == 0 && filter.subCategory == 0 ? <FilterAlt /> : <FilterAltOff htmlColor="#04d164" />
-  }
-
-  const handleFilterChange = (event) => {
-    const { name, value } = event.target;
-
-    if (name === 'mainCategory') {
-      setFilter({ mainCategory: value, subCategory: 0 });
-    } else {
-      setFilter(prevFilter => ({
-        ...prevFilter,
-        [name]: value
-      }));
-    }
-  }
-
-  const resetFilter = () => {
-    setFilter({ mainCategory: 0, subCategory: 0 });
-  }
-
-  // -----------------------------------
-  // States for the Popovers
-  // -----------------------------------
-  const [filterPopoverAnchor, setFilterPopoverAnchor] = React.useState(null);
-  const filterPopoverOpen = Boolean(filterPopoverAnchor);
-
-  const handleCloseFilterPopover = () => {
-    setFilterPopoverAnchor(null);
-  };
-
-  const [copyPopoverAnchor, setCopyPopoverAnchor] = React.useState(null);
-  const copyPopoverOpen = Boolean(copyPopoverAnchor);
-
-  const handleCloseCopyPopover = () => {
-    setCopyPopoverAnchor(null);
-  };
-
-  const [radioAmount, setRadioAmount] = React.useState('1');
-
-  // Tooltips
-  const duplicateTooltip = numSelected > 1 ? "Can't duplicate multiple at once" : "Duplicate";
-  const editTooltip = numSelected > 1 ? "Can't edit multiple at once" : "Edit";
-
-  // Sum total
-  const totalStr = getTotalString(expensesSum, largeScreen, numSelected);
-
-  return (
-    <Toolbar
-      variant="dense"
-      sx={{
-        pl: { sm: 2 },
-        pr: { xs: 1, sm: 1 },
-        ...(numSelected > 0 && {
-          bgcolor: (appTheme) =>
-            alpha(appTheme.palette.primary.main, appTheme.palette.action.activatedOpacity),
-        }),
-      }}
-    >
-      {numSelected > 0 ? (
-        <Typography
-          sx={{ flex: '1 1 40%' }}
-          color="inherit"
-          variant="subtitle1"
-          component="div"
-        >
-          {numSelected} selected
-        </Typography>
-      ) : (
-        <Typography
-          sx={{ flex: '1 1 40%' }}
-          variant="h6"
-          id="tableTitle"
-          component="div"
-        >
-          {title}
-        </Typography>
-      )}
-      <Typography
-        sx={{ flex: '1 1 40%', color: theme.palette.primary.main, fontWeight: 700 }}
-        variant="subtitle1"
-        id="tableTitle"
-        component="div"
-      >
-        {totalStr}
-      </Typography>
-
-      <Box sx={{ width: 120 }}>
-        {numSelected > 0 ? (
-          <Stack direction="row">
-            <Tooltip title={editTooltip}>
-              <span>
-                <IconButton
-                  onClick={() => {
-                    handleAction('edit', selected)
-                  }}
-                  disabled={numSelected > 1}
-                >
-                  <EditIcon />
-                </IconButton>
-              </span>
-            </Tooltip>
-            <Tooltip title={duplicateTooltip}>
-              <span>
-                <IconButton
-                  onClick={() => {
-                    handleAction('duplicate', selected)
-                  }}
-                  disabled={numSelected > 1}
-                >
-                  <ContentCopyIcon />
-                </IconButton>
-              </span>
-            </Tooltip>
-            <Tooltip title="Delete">
-              <IconButton
-                onClick={() => {
-                  handleAction('delete', selected);
-
-                  // After the action, clear the selected array
-                  setSelected([]);
-                }}
-              >
-                <DeleteIcon />
-              </IconButton>
-            </Tooltip>
-          </Stack>
-        ) : (
-          <Stack direction="row" spacing={1} alignItems="center" justifyContent="flex-end">
-            <Tooltip title="Filter expenses per category">
-              <IconButton
-                sx={{ alignContent: "right" }}
-                onClick={(event) => setFilterPopoverAnchor(event.currentTarget)}
-              >
-                {
-                  getFilterIcon()
-                }
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Copy recurring expenses to next month">
-              <IconButton
-                sx={{ alignContent: "right" }}
-                onClick={(event) => setCopyPopoverAnchor(event.currentTarget)}
-              >
-                <DoubleArrowIcon />
-              </IconButton>
-            </Tooltip>
-            {
-              // -----------------------------------
-              // Popovers
-              // -----------------------------------
-            }
-            <Popover
-              elevation={10}
-              open={filterPopoverOpen}
-              anchorEl={filterPopoverAnchor}
-              onClose={handleCloseFilterPopover}
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'left',
-              }}
-            >
-              <IconButton
-                aria-label="Close"
-                onClick={handleCloseFilterPopover}
-                style={{ position: 'absolute', right: '4px', top: '4px', zIndex: '1000' }}>
-                <CloseIcon />
-              </IconButton>
-              <Stack direction="row" spacing={5} alignItems="center" justifyContent="flex-start">
-                <Typography sx={{ p: 2 }}>Filter</Typography>
-                <Button
-                  color="error"
-                  tabIndex={0}
-                  aria-label={'Reset filter'}
-                  onClick={resetFilter}>
-                  RESET
-                </Button>
-              </Stack>
-              <FormControl variant="standard" sx={{ m: 1, minWidth: '150px' }}>
-                <InputLabel id="category-select-label">Category</InputLabel>
-                <Select
-                  labelId="category-label"
-                  id="mainCategory"
-                  name="mainCategory"
-                  label="Category"
-                  value={filter.mainCategory}
-                  onChange={handleFilterChange}
-                >
-                  <MenuItem key={'category-all'} value='0'>All</MenuItem>
-                  {
-                    availableCategories.map((category) => (
-                      <MenuItem key={category.id} value={category.id}>{category.title}</MenuItem>
-                    ))
-                  }
-                </Select>
-              </FormControl>
-              <FormControl variant="standard" sx={{ m: 1, minWidth: '150px' }}>
-                <InputLabel id="subCategory-select-label">Sub-category</InputLabel>
-                <Select
-                  labelId="subCategory-label"
-                  id="subCategory"
-                  name="subCategory"
-                  label="Sub-category"
-                  value={filter.subCategory}
-                  onChange={handleFilterChange}
-                >
-                  <MenuItem key={'subcategory-all'} value='0'>All</MenuItem>
-                  {
-                    availableSubCategories.map((category) => (
-                      <MenuItem key={category.id} value={category.id}>{category.title}</MenuItem>
-                    ))
-                  }
-                </Select>
-              </FormControl>
-            </Popover>
-            <Popover
-              elevation={10}
-              open={copyPopoverOpen}
-              anchorEl={copyPopoverAnchor}
-              onClose={handleCloseCopyPopover}
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'left',
-              }}
-            >
-              <Box sx={{ m: 2, p: 1 }}>
-                <IconButton
-                  aria-label="Close"
-                  onClick={handleCloseCopyPopover}
-                  style={{ position: 'absolute', right: '4px', top: '4px', zIndex: '1000' }}>
-                  <CloseIcon />
-                </IconButton>
-                <Typography variant="h6" gutterBottom>Copy to next month</Typography>
-                <Typography variant="body1" gutterBottom>This will copy <strong>recurring expenses</strong> from <br />this month to next month.</Typography>
-                <Typography variant="body1" gutterBottom>You can choose whether to fully copy or to <br />set the spent as zero and edit later.</Typography>
-                <FormControl sx={{ py: 1 }}>
-                  <FormLabel id="radio-label" sx={{ textAlign: "left" }}>Amount spent</FormLabel>
-                  <RadioGroup
-                    row
-                    aria-labelledby="radio-buttons-group-label"
-                    name="row-radio-buttons-group"
-                    value={radioAmount}
-                    onChange={(event) => setRadioAmount(event.target.value)}
-                  >
-                    <FormControlLabel value="1" control={<Radio />} label="Keep amounts" />
-                    <FormControlLabel value="0" control={<Radio />} label="Clear amounts" />
-                  </RadioGroup>
-                </FormControl>
-                <Stack direction='row' justifyContent='space-around'>
-                  <Button
-                    color="primary"
-                    tabIndex={0}
-                    aria-label='Copy'
-                    onClick={() => {
-                      handleAction('copy', [], { keepAmounts: !!Number(radioAmount) });
-                      handleCloseCopyPopover();
-                    }}
-                  >
-                    Copy
-                  </Button>
-                  <Button
-                    color="error"
-                    tabIndex={0}
-                    aria-label='Cancel'
-                    onClick={handleCloseCopyPopover}>
-                    CANCEL
-                  </Button>
-                </Stack>
-              </Box>
-            </Popover>
-          </Stack>
-        )}
-      </Box>
-    </Toolbar>
-  );
-};
-
-ExpensesTableToolbar.propTypes = {
-  selected: PropTypes.array.isRequired,
-  title: PropTypes.string.isRequired,
-  handleAction: PropTypes.func.isRequired,
-  setSelected: PropTypes.func.isRequired,
-  filter: PropTypes.object.isRequired,
-  setFilter: PropTypes.func.isRequired,
-  expensesSum: PropTypes.string.isRequired,
-  filterable: PropTypes.object.isRequired,
-  largeScreen: PropTypes.object.isRequired,
-};
-
-function ExpensesTableHead(props) {
-  const {
-    onSelectAllClick,
-    order,
-    orderBy,
-    numSelected,
-    rowCount,
-    onRequestSort,
-    largeScreen } = props;
-
-  const createSortHandler = (property) => (event) => {
-    onRequestSort(event, property);
-  };
-
-  const headCells = [
-    {
-      id: 'date',
-      numeric: false,
-      disablePadding: true,
-      label: 'Date',
-    },
-    {
-      id: 'description',
-      numeric: false,
-      disablePadding: true,
-      label: 'Description',
-    },
-    {
-      id: 'categoryText',
-      numeric: false,
-      disablePadding: true,
-      label: 'Category',
-      onlyLargeScreen: true
-    },
-    {
-      id: 'spent',
-      numeric: true,
-      disablePadding: false,
-      label: 'Spent',
-    },
-  ];
-
-  return (
-    <TableHead>
-      <TableRow>
-        <TableCell padding="checkbox">
-          <Checkbox
-            color="primary"
-            indeterminate={numSelected > 0 && numSelected < rowCount}
-            checked={rowCount > 0 && numSelected === rowCount}
-            onChange={onSelectAllClick}
-            inputProps={{
-              'aria-label': 'select all',
-            }}
-          />
-        </TableCell>
-        {headCells.map((headCell) => {
-          if (!largeScreen.width && headCell.onlyLargeScreen) return;
-
-          return (
-            <TableCell
-              key={headCell.id}
-              align={headCell.numeric ? 'right' : 'center'}
-              padding={headCell.disablePadding ? 'none' : 'normal'}
-              sortDirection={orderBy === headCell.id ? order : false}
-            >
-              <TableSortLabel
-                active={orderBy === headCell.id}
-                direction={orderBy === headCell.id ? order : 'asc'}
-                onClick={createSortHandler(headCell.id)}
-              >
-                {headCell.label}
-                {orderBy === headCell.id && (
-                  <Box component="span" sx={visuallyHidden}>
-                    {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                  </Box>
-                )}
-              </TableSortLabel>
-            </TableCell>
-          )
-        })}
-      </TableRow>
-    </TableHead>
-  );
-}
-
-ExpensesTableHead.propTypes = {
-  numSelected: PropTypes.number.isRequired,
-  onRequestSort: PropTypes.func.isRequired,
-  onSelectAllClick: PropTypes.func.isRequired,
-  order: PropTypes.oneOf(['asc', 'desc']).isRequired,
-  orderBy: PropTypes.string.isRequired,
-  rowCount: PropTypes.number.isRequired,
-  largeScreen: PropTypes.object.isRequired
-};
-
-
 
 const CustomWidthTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -471,7 +24,6 @@ const CustomWidthTooltip = styled(({ className, ...props }) => (
   },
 });
 
-// Hoisted out of the component — was being redefined on every render
 const StyledTableRow = styled(TableRow)(({ theme: appTheme }) => ({
   '&:nth-of-type(odd)': {
     backgroundColor: appTheme.palette.action.hover,
@@ -501,109 +53,33 @@ function ExpensesTable(props) {
   const [orderBy, setOrderBy] = React.useState('date');
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(largeScreen.height ? 20 : 8);
   const [filter, setFilter] = React.useState({
     mainCategory: props.filter?.mainCategory || 0,
     subCategory: props.filter?.subCategory || 0
   });
 
-  React.useEffect(() => {
-    // If month or year has hanged, clear selected array and go back to page 0
+  // Rows per page: derived from screen height until the user picks a
+  // value explicitly — then the explicit choice wins
+  const [rowsPerPageOverride, setRowsPerPageOverride] = React.useState(null);
+  const rowsPerPage = rowsPerPageOverride ?? (largeScreen.height ? 20 : 8);
+
+  // When month/year changes (the title identifies the period), clear
+  // the selection and go back to the first page — adjusted during
+  // render instead of via an effect
+  const [prevTitle, setPrevTitle] = React.useState(props.title);
+  if (prevTitle !== props.title) {
+    setPrevTitle(props.title);
     setSelected([]);
     setPage(0);
-  }, [props.title]);
+  }
 
-  React.useEffect(() => {
-    // If screen orientation has changed, set number of rows per page
-    setRowsPerPage(largeScreen.height ? 20 : 8)
-  }, [largeScreen.height]);
-
-  React.useEffect(() => {
-    // If filter was changed, go back to page 0
+  // Filter changes also reset pagination
+  const updateFilter = (value) => {
+    setFilter(value);
     setPage(0);
-  }, [filter]);
+  };
 
   const rows = props.expenses || [];
-
-  // -------------------------------------------
-  // useKeyPress hook
-  // let's capture left and right arrows
-  // and use them to change the months
-  // -------------------------------------------
-  const keyH = useKeyPress("h"); // as in 'home'
-  const keyJ = useKeyPress("j");
-  const keyK = useKeyPress("k");
-  const keyL = useKeyPress("l"); // as in 'last'
-  const keyT = useKeyPress("t"); // as in 'toggle'
-  const keyD = useKeyPress("d"); // as in 'date'
-  const keyS = useKeyPress("s"); // as in 'spent'
-  const keyE = useKeyPress("e"); // as in 'edit'
-  const key2 = useKeyPress("2"); // for 'duplicate'
-
-  // -----------------------------------
-  // Handlers for page changes
-  // -----------------------------------
-  React.useEffect(() => {
-    if (!searchFocus) {
-      if (keyH) {
-        handleChangePage(undefined, 0);
-      }
-
-      if (keyJ && page > 0) {
-        handleChangePage(undefined, page - 1);
-      }
-
-      if (keyK && page < pageCount) {
-        handleChangePage(undefined, page + 1);
-      }
-
-      if (keyL) {
-        handleChangePage(undefined, pageCount);
-      }
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [keyH, keyJ, keyK, keyL, searchFocus]);
-
-  // -----------------------------------
-  // Handlers for order and order by
-  // -----------------------------------
-  React.useEffect(() => {
-    if (!searchFocus) {
-      if (keyT) {
-        handleChangeOrder();
-      }
-
-      if (keyD) {
-        handleChangeOrderBy('date');
-      }
-
-      if (keyS) {
-        handleChangeOrderBy('spent');
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [keyT, keyD, keyS, searchFocus]);
-
-  // -----------------------------------
-  // Handlers for edit and duplicate
-  // -----------------------------------
-  React.useEffect(() => {
-    if (!searchFocus) {
-      if (keyE) {
-        if (selected.length === 1) {
-          props.handleAction('edit', selected);
-        }
-      }
-
-      if (key2) {
-        if (selected.length === 1) {
-          props.handleAction('duplicate', selected);
-        }
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [keyE, key2, searchFocus]);
 
   // ----------------------------------------
   //  Button handlers
@@ -647,20 +123,8 @@ function ExpensesTable(props) {
     setPage(newPage);
   };
 
-  const handleChangeOrder = () => {
-    setOrder(prev => {
-      if (prev === 'asc') return 'desc';
-      else return 'asc';
-    });
-  }
-
-  const handleChangeOrderBy = (column) => {
-    setOrderBy(column);
-  };
-
-
   const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
+    setRowsPerPageOverride(parseInt(event.target.value, 10));
     setPage(0);
   };
 
@@ -668,7 +132,7 @@ function ExpensesTable(props) {
 
   // ----------------------------------------
   // Filterable
-  // Get categories and sub-categories 
+  // Get categories and sub-categories
   // from the rows
   // ----------------------------------------
   const getFilterableCategories = (data) => {
@@ -712,6 +176,31 @@ function ExpensesTable(props) {
   // Number of pages
   const pageCount = Math.floor(filteredRows.length / rowsPerPage);
 
+  // -------------------------------------------
+  // Keyboard shortcuts (suspended while the
+  // search bar is focused)
+  // -------------------------------------------
+  useKeydown((event) => {
+    switch (event.key) {
+    // pagination: home / previous / next / last
+    case 'h': setPage(0); break;
+    case 'j': setPage(prev => Math.max(0, prev - 1)); break;
+    case 'k': setPage(prev => Math.min(pageCount, prev + 1)); break;
+    case 'l': setPage(pageCount); break;
+
+      // ordering: toggle direction / by date / by spent
+    case 't': setOrder(prev => prev === 'asc' ? 'desc' : 'asc'); break;
+    case 'd': setOrderBy('date'); break;
+    case 's': setOrderBy('spent'); break;
+
+      // actions on a single selected expense
+    case 'e': if (selected.length === 1) props.handleAction('edit', selected); break;
+    case '2': if (selected.length === 1) props.handleAction('duplicate', selected); break;
+
+    default: break;
+    }
+  }, !searchFocus);
+
   // -------------------------------------------------------
   // Sum expenses
   // If none is selected, sum them all
@@ -736,7 +225,7 @@ function ExpensesTable(props) {
         <ExpensesTableToolbar
           selected={selected}
           setSelected={setSelected}
-          setFilter={setFilter}
+          setFilter={updateFilter}
           filter={filter}
           expensesSum={expensesSum}
           handleAction={props.handleAction}
@@ -816,7 +305,6 @@ function ExpensesTable(props) {
                       <Tooltip align="right" title={visibility ? `Paid: ${row.amountPaid}, Reimbursed: ${row.amountReimbursed}` : ''}>
                         <TableCell
                           align="right"
-                          sx={{}}
                         >{visibility ? customlocaleString(row.spent) : '••••••••'}</TableCell>
                       </Tooltip>
                     </StyledTableRow>

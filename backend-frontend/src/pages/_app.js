@@ -10,6 +10,7 @@ import { CacheProvider } from '@emotion/react';
 import { QueryClient, QueryClientProvider, QueryCache } from '@tanstack/react-query';
 import { getTheme } from '../theme';
 import createEmotionCache from '../createEmotionCache';
+import { useMediaQueryMatch } from 'src/hooks/use-media-query-match';
 
 const roboto = Roboto({
   weight: ['300', '400', '500', '700'],
@@ -61,9 +62,18 @@ export default function MyApp(props) {
 
   // authorized does not mean authenticated - it means authorized for the current page
   const [authorized, setAuthorized] = useState(false);
-  const [largeScreen, setLargeScreen] = useState({ width: true, height: true });
   const [visibility, setVisibility] = useState(true);
   const [searchFocus, setSearchFocus] = useState(false);
+
+  // ----------------------------------------
+  // Screen size, subscribed via matchMedia
+  // ----------------------------------------
+  const largeScreenWidth = useMediaQueryMatch(`(min-width: ${WIDTH_TRESHOLD}px)`);
+  const largeScreenHeight = useMediaQueryMatch(`(min-height: ${HEIGT_TRESHOLD}px)`);
+  const largeScreen = useMemo(
+    () => ({ width: largeScreenWidth, height: largeScreenHeight }),
+    [largeScreenWidth, largeScreenHeight]
+  );
 
   // ----------------------------------------
   // Light/dark mode: stored preference wins,
@@ -95,44 +105,29 @@ export default function MyApp(props) {
 
   const muiTheme = useMemo(() => getTheme(themeMode), [themeMode]);
 
-  // ----------------------------------------
-  // Set listeners for screen change
-  // ----------------------------------------
-  React.useEffect(() => {
-    const widthQuery = window.matchMedia(`(min-width: ${WIDTH_TRESHOLD}px)`);
-    const heightQuery = window.matchMedia(`(min-height: ${HEIGT_TRESHOLD}px)`);
-
-    // Set initial
-    setLargeScreen({
-      width: widthQuery.matches,
-      height: heightQuery.matches
-    });
-
-    // Handlers — skip updates when the value hasn't changed to avoid cascading re-renders
-    const handleWidthResize = e => {
-      setLargeScreen(prev => prev.width === e.matches ? prev : { ...prev, width: e.matches })
-    };
-
-    const handleHeigthResize = e => {
-      setLargeScreen(prev => prev.height === e.matches ? prev : { ...prev, height: e.matches })
-    };
-
-    // Set listeners
-    widthQuery.addEventListener('change', handleWidthResize);
-    heightQuery.addEventListener('change', handleHeigthResize);
-
-    // Cleanup — must remove from the MediaQueryList objects the listeners were added to
-    return () => {
-      widthQuery.removeEventListener('change', handleWidthResize);
-      heightQuery.removeEventListener('change', handleHeigthResize);
+  // ----------------------------------------------------------------
+  // Auth check: redirect to login when accessing a private page
+  // while not logged in (defined before the effect that wires it up)
+  // ----------------------------------------------------------------
+  function authCheck(url) {
+    const publicPaths = ['/account/login', '/account/register'];
+    const path = url.split('?')[0];
+    if (!userService.userValue && !publicPaths.includes(path)) {
+      setAuthorized(false);
+      router.push({
+        pathname: '/account/login',
+      });
+    } else {
+      setAuthorized(true);
     }
-  }, []);
+  }
 
   // ----------------------------------------
   // Set callbacks for router events
   // ----------------------------------------
   React.useEffect(() => {
-    // on initial load - run auth check 
+    // on initial load - run auth check
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time auth sync with localStorage after hydration
     authCheck(router.asPath);
 
     // on route change start - hide page content by setting authorized to false  
@@ -150,20 +145,6 @@ export default function MyApp(props) {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  function authCheck(url) {
-    // redirect to login page if accessing a private page and not logged in 
-    const publicPaths = ['/account/login', '/account/register'];
-    const path = url.split('?')[0];
-    if (!userService.userValue && !publicPaths.includes(path)) {
-      setAuthorized(false);
-      router.push({
-        pathname: '/account/login',
-      });
-    } else {
-      setAuthorized(true);
-    }
-  }
 
   // UI-only global state — server data lives in the query cache
   const memoized = useMemo(() => ({

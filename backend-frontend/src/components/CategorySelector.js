@@ -11,15 +11,11 @@ import InputLabel from '@mui/material/InputLabel';
 
 export default function CategorySelector(props) {
   const { handleChange, mainCategories, radio } = props;
-  const [category, setCategory] = React.useState(mainCategories[0] ? mainCategories[0].id : '');
+  const [selectedId, setSelectedId] = React.useState(mainCategories[0] ? mainCategories[0].id : '');
 
-  // If the selected category is no longer supplied in the mainCategories array,
-  // clear the selection
-  if (mainCategories.length > 0 &&
-    category !== '' &&
-    !mainCategories.find(cat => cat.id === category)) {
-    setCategory('');
-  }
+  // Derive instead of syncing state: if the selected category is no
+  // longer in the mainCategories array (e.g. year changed), show empty
+  const category = mainCategories.find(cat => cat.id === selectedId) ? selectedId : '';
 
   return (
     <Stack direction='row' sx={{ alignItems: "center" }}>
@@ -59,7 +55,7 @@ export default function CategorySelector(props) {
           onChange={(event => {
             // Set category to event target and radio to 'detailed' 
             const { value } = event.target;
-            setCategory(value);
+            setSelectedId(value);
 
             // Call handler with value from Select
             handleChange('type', value.toString());
