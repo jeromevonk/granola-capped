@@ -9,11 +9,11 @@ export { useKeydown };
 // pattern without cascading renders.
 // Pass enabled=false to suspend (e.g. while the search bar is focused).
 // -------------------------------------------------------------------
-function useKeydown(onKeyDown, enabled = true) {
+function useKeydown(onKeyDown: (event: KeyboardEvent) => void, enabled = true): void {
   useEffect(() => {
     if (!enabled) return;
 
-    const handler = (event) => {
+    const handler = (event: KeyboardEvent) => {
       // holding a key down must not repeat the action
       if (event.repeat) return;
       onKeyDown(event);
