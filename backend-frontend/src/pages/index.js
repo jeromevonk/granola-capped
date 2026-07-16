@@ -2,13 +2,13 @@ import * as React from 'react';
 import PropTypes from 'prop-types';
 import { Container, Box, Stack, Fab, LinearProgress } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import SearchIcon from '@mui/icons-material/Search';
 import { useRouter, withRouter } from 'next/router'
 import ExpensesTable from '../components/ExpensesTable';
 import DateSelector from '../components/DateSelector';
 import { expenseService, alertService } from 'src/services';
-import { getCustomDateString, mapExpenseToRow, toExpenseFormQuery, useKeyPress } from 'src/helpers'
+import { getCustomDateString, mapExpenseToRow, toExpenseFormQuery } from 'src/helpers'
 import { useCategories, useExpenses, useInvalidateExpenses } from 'src/hooks/queries';
+import { useKeydown } from 'src/hooks/use-keydown';
 import { AppContext } from 'src/pages/_app';
 
 function Index(props) {
@@ -39,27 +39,18 @@ function Index(props) {
   };
 
   // -------------------------------------------
-  // useKeyPress hook
-  // let's capture left and right arrows
-  // and use them to change the months
+  // Left and right arrows change the month
+  // (suspended while the search bar is focused)
   // -------------------------------------------
-  const leftArrow = useKeyPress("ArrowLeft");
-  const rightArrow = useKeyPress("ArrowRight");
-
-  React.useEffect(() => {
-    if (!searchFocus) {
-
-      if (leftArrow && selectedDate.month > 1) {
-        handleChange('month', selectedDate.month - 1)
-      }
-
-      if (rightArrow && selectedDate.month < 12) {
-        handleChange('month', selectedDate.month + 1)
-      }
+  useKeydown((event) => {
+    if (event.key === 'ArrowLeft' && selectedDate.month > 1) {
+      handleChange('month', selectedDate.month - 1)
     }
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [leftArrow, rightArrow, searchFocus]);
+    if (event.key === 'ArrowRight' && selectedDate.month < 12) {
+      handleChange('month', selectedDate.month + 1)
+    }
+  }, !searchFocus);
 
   // Initial filter
   const initialFilter = {
@@ -188,27 +179,9 @@ function Index(props) {
         <AddIcon />
       </Fab>
       {
-        // Only show the search icon on mobile
-        !largeScreen.width &&
-        <Container>
-          <Fab
-            color="primary"
-            size='small'
-            onClick={() => router.push({ pathname: '/search-mobile' })}
-            sx={{
-              margin: 0,
-              top: 'auto',
-              right: 20,
-              bottom: 20,
-              left: 'auto',
-              position: 'fixed',
-            }}
-          >
-            <SearchIcon />
-          </Fab>
-          { /* Add some blank space at the bottom, so user can scroll and search icon gives space to table pagination */}
-          <Box sx={{ height: 25 }} />
-        </Container>
+        // On mobile, leave breathing room below the table
+        // (search now lives in the app bar)
+        !largeScreen.width && <Box sx={{ height: 25 }} />
       }
     </Container>
   );

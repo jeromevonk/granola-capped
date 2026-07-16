@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { categoryService, expenseService, statsService } from 'src/services';
 import { getMainCategories } from 'src/helpers';
+import type { Category, CategoryReportEntry, EvolutionEntry, Expense } from 'src/types';
 
 export {
   useCategories,
@@ -29,39 +30,41 @@ function useCategories() {
     queryFn: () => categoryService.getCategories(),
   });
 
-  const categories = useMemo(() => (data || []), [data]);
+  const categories = useMemo<Category[]>(() => (data || []), [data]);
   const mainCategories = useMemo(() => getMainCategories(categories), [categories]);
 
   return { categories, mainCategories, isPending };
 }
 
-function useExpenses(year) {
-  return useQuery({
+function useExpenses(year: number) {
+  return useQuery<Expense[]>({
     queryKey: ['expenses', year],
     queryFn: () => expenseService.getExpenses(year),
   });
 }
 
 function useYears() {
-  return useQuery({
+  return useQuery<number[]>({
     queryKey: ['years'],
     queryFn: () => expenseService.getYears(),
   });
 }
 
-function useExpenseSearch(query) {
-  return useQuery({
+function useExpenseSearch(query: string | undefined) {
+  return useQuery<Expense[]>({
     queryKey: ['expenses', 'search', query],
-    queryFn: () => expenseService.searchExpenses(query),
+    queryFn: () => expenseService.searchExpenses(query as string),
     enabled: !!query,
   });
 }
 
-function useEvolution(dateType, categoryType, categoryNumber) {
-  return useQuery({
+type EvolutionCategoryType = 'all' | 'mainCategory' | 'subCategory';
+
+function useEvolution(dateType: 'year' | 'month', categoryType: EvolutionCategoryType, categoryNumber: number) {
+  return useQuery<EvolutionEntry[]>({
     queryKey: ['stats', 'evolution', dateType, categoryType, categoryNumber],
     queryFn: () => {
-      const params = {};
+      const params: { mainCategory?: number; subCategory?: number } = {};
       if (categoryType === 'mainCategory') params.mainCategory = categoryNumber;
       if (categoryType === 'subCategory') params.subCategory = categoryNumber;
 
@@ -72,8 +75,8 @@ function useEvolution(dateType, categoryType, categoryNumber) {
   });
 }
 
-function useCategoryReport(year, reportType) {
-  return useQuery({
+function useCategoryReport(year: number, reportType: string) {
+  return useQuery<CategoryReportEntry[]>({
     queryKey: ['stats', 'report', year, reportType],
     queryFn: () => statsService.getCategoryReportByYear(year, year, reportType),
   });
@@ -81,7 +84,7 @@ function useCategoryReport(year, reportType) {
 
 // Every expense mutation must call this: it refreshes expense lists,
 // search results, the year list and the stats-derived pages
-function useInvalidateExpenses() {
+function useInvalidateExpenses(): () => void {
   const queryClient = useQueryClient();
 
   return () => {

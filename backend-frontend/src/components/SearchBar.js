@@ -49,7 +49,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 export default function SearchBar(props) {
   const handleSearch = props.handleSearch;
   const setSearchFocus = props.setSearchFocus || function(){};
-  
+
   return (
     <Search>
       <SearchIconWrapper>
@@ -58,6 +58,7 @@ export default function SearchBar(props) {
       <StyledInputBase
         placeholder="Search…"
         inputProps={{ 'aria-label': 'search', spellCheck: 'false' }}
+        autoFocus={props.autoFocus}
         onKeyDown={handleSearch}
         onFocus={(e) => {
           setSearchFocus(true);
@@ -73,4 +74,5 @@ export default function SearchBar(props) {
 SearchBar.propTypes = {
   handleSearch: PropTypes.func.isRequired,
   setSearchFocus: PropTypes.func,
+  autoFocus: PropTypes.bool,
 };

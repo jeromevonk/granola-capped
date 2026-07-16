@@ -1,4 +1,5 @@
 import { getCategoryTitles } from './category-helper';
+import type { Category, Expense, ExpenseFormQuery, ExpenseRow } from 'src/types';
 
 export {
   mapExpenseToRow,
@@ -12,7 +13,7 @@ export {
 //   'full' - date is YYYY-MM-DD, with 'XX' as the day when it is null
 //            (search results span multiple months)
 // -------------------------------------------------------------------
-function mapExpenseToRow(expense, categories, dateStyle = 'day') {
+function mapExpenseToRow(expense: Expense, categories: Category[], dateStyle: 'day' | 'full' = 'day'): ExpenseRow {
   const cat = getCategoryTitles(categories, expense.category);
 
   return {
@@ -27,7 +28,7 @@ function mapExpenseToRow(expense, categories, dateStyle = 'day') {
     subCategoryText: cat.categoryTitle,
     amountPaid: expense.amountPaid,
     amountReimbursed: expense.amountReimbursed,
-    spent: (expense.amountPaid - expense.amountReimbursed).toFixed(2),
+    spent: (Number(expense.amountPaid) - Number(expense.amountReimbursed)).toFixed(2),
     recurring: expense.recurring,
   };
 }
@@ -37,7 +38,7 @@ function mapExpenseToRow(expense, categories, dateStyle = 'day') {
 // It goes in the real URL (not masked), so the form survives a page
 // reload — only the fields the form consumes, no derived ones.
 // -------------------------------------------------------------------
-function toExpenseFormQuery(row) {
+function toExpenseFormQuery(row: ExpenseRow): ExpenseFormQuery {
   return {
     day: row.day ?? '',
     description: row.description,
@@ -49,7 +50,7 @@ function toExpenseFormQuery(row) {
   };
 }
 
-function formatFullDate(year, month, day) {
+function formatFullDate(year: number, month: number, day: number | null): string {
   const monthStr = String(month).padStart(2, '0');
   const dayStr = day !== null ? String(day).padStart(2, '0') : 'XX';
 

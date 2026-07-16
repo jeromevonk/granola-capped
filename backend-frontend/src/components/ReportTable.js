@@ -116,11 +116,11 @@ function ReportTable(props) {
   const [order, setOrder] = React.useState('desc');
   const [orderBy, setOrderBy] = React.useState('year');
   const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(largeScreen.height ? 20 : 8);
 
-  React.useEffect(() => {
-    setRowsPerPage(largeScreen.height ? 20 : 8)
-  }, [largeScreen.height]);
+  // Rows per page: derived from screen height until the user picks a
+  // value explicitly — then the explicit choice wins
+  const [rowsPerPageOverride, setRowsPerPageOverride] = React.useState(null);
+  const rowsPerPage = rowsPerPageOverride ?? (largeScreen.height ? 20 : 8);
 
   const rows = props.data || [];
   const numMonths = props.numMonths;
@@ -149,7 +149,7 @@ function ReportTable(props) {
   };
 
   const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
+    setRowsPerPageOverride(parseInt(event.target.value, 10));
     setPage(0);
   };
 
@@ -194,9 +194,6 @@ function ReportTable(props) {
   const getCellAlignment = (value) => {
     return value == '-' ? "center" : "right";
   }
-
-  // Avoid a layout jump when reaching the last page with empty rows.
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
   return (
     <Box sx={{ width: '100%' }}>
@@ -246,15 +243,6 @@ function ReportTable(props) {
                     </StyledTableRow>
                   );
                 })}
-              {emptyRows > 0 && (
-                <TableRow
-                  style={{
-                    height: 33 * emptyRows,
-                  }}
-                >
-                  <TableCell colSpan={6} />
-                </TableRow>
-              )}
             </TableBody>
           </Table>
         </TableContainer>
