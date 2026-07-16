@@ -42,12 +42,12 @@ function getComparator(order: 'asc' | 'desc', orderBy: string) {
     : (a: SortableRow, b: SortableRow) => -descendingComparator(a, b, orderBy);
 }
 
-const textHeadCells = ['date', 'description', 'categoryText', 'category'];
+const textHeadCells = new Set(['date', 'description', 'categoryText', 'category']);
 
 function descendingComparator(a: SortableRow, b: SortableRow, orderBy: string): number {
   let x, y;
 
-  if (textHeadCells.includes(orderBy)) {
+  if (textHeadCells.has(orderBy)) {
     x = a[orderBy] as string | number;
     y = b[orderBy] as string | number;
   } else {

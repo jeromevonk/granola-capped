@@ -10,14 +10,14 @@ async function getExpenses(req, res) {
   const { params } = req.query;
 
   // Validate year - mandatory (2012 <= year < 2050)
-  const year = parseInt(params[0]);
-  if (isNaN(year) || year < 2012 || year > 2050) return res.status(400).json({ message: "Invalid 'year'. Must be between 2012 and 2050" });
+  const year = Number.parseInt(params[0]);
+  if (Number.isNaN(year) || year < 2012 || year > 2050) return res.status(400).json({ message: "Invalid 'year'. Must be between 2012 and 2050" });
 
   // Validate month - optional (1 <= month <= 12)
   let month = null;
   if (params.length > 1) {
-    month = parseInt(params[1]);
-    if (isNaN(month) || month < 1 || month > 12) return res.status(400).json({ message: "Invalid 'month'. Must be between 1 and 12" });
+    month = Number.parseInt(params[1]);
+    if (Number.isNaN(month) || month < 1 || month > 12) return res.status(400).json({ message: "Invalid 'month'. Must be between 1 and 12" });
   }
 
   const response = await expenseRepo.getExpenses(req.auth.sub, null, year, month);
@@ -29,8 +29,8 @@ async function putExpense(req, res) {
   const { params } = req.query;
 
   // Validate expense id - mandatory
-  const expenseId = params[0];
-  if (isNaN(expenseId) || expenseId <= 0) return res.status(400).json({ message: 'Invalid expense id' });
+  const expenseId = Number(params[0]);
+  if (Number.isNaN(expenseId) || expenseId <= 0) return res.status(400).json({ message: 'Invalid expense id' });
 
 
   // Validate expense body - mandatory
@@ -59,8 +59,8 @@ async function deleteExpense(req, res) {
   const { params } = req.query;
 
   // Validate expense id - mandatory
-  const expenseId = params[0];
-  if (isNaN(expenseId) || expenseId <= 0) return res.status(400).json({ message: 'Invalid expense id' });
+  const expenseId = Number(params[0]);
+  if (Number.isNaN(expenseId) || expenseId <= 0) return res.status(400).json({ message: 'Invalid expense id' });
 
   const response = await expenseRepo.deleteExpense(req.auth.sub, expenseId);
 

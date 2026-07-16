@@ -1,6 +1,7 @@
 export {
   getCustomDateString,
-  getCustomMonthInitials,
+  getMonthAbbreviation,
+  getMonthInitials,
   formatCompactDate,
   parseDate,
 };
@@ -13,12 +14,12 @@ function getCustomDateString(year: number, month: number, isLarge: boolean): str
   return `${monthStr} ${year}`
 }
 
-function getCustomMonthInitials(monthId: number, isLarge: boolean): string {
-  if (isLarge) {
-    return months[monthId - 1].substring(0, 3);
-  } else {
-    return months[monthId - 1].substring(0, 2);
-  }
+function getMonthAbbreviation(monthId: number): string {
+  return months[monthId - 1].substring(0, 3);
+}
+
+function getMonthInitials(monthId: number): string {
+  return months[monthId - 1].substring(0, 2);
 }
 
 // 'YYYY-MM-DD' -> 'DD/MM/YY', for narrow screens where the ISO date

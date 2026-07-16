@@ -125,11 +125,11 @@ function ExpensesTable(props) {
   };
 
   const handleChangeRowsPerPage = (event) => {
-    setRowsPerPageOverride(parseInt(event.target.value, 10));
+    setRowsPerPageOverride(Number.parseInt(event.target.value, 10));
     setPage(0);
   };
 
-  const isSelected = (id) => selected.indexOf(id) !== -1;
+  const isSelected = (id) => selected.includes(id);
 
   // Full dates (search view) don't fit on narrow screens — compact them.
   // Month view dates are just day numbers and pass through untouched.
@@ -157,7 +157,7 @@ function ExpensesTable(props) {
       }
 
       // Add the sub-category, if not there already
-      if (!prev[key].find(item => item.id === sub)) {
+      if (!prev[key].some(item => item.id === sub)) {
         prev[key].push({
           id: sub,
           title: titles.categoryTitle

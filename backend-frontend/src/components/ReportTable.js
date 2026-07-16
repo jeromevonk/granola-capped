@@ -15,7 +15,7 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import { visuallyHidden } from '@mui/utils';
 import { AppContext } from 'src/pages/_app';
-import { getCustomMonthInitials, customlocaleString, getComparator } from 'src/helpers'
+import { getMonthAbbreviation, customlocaleString, getComparator } from 'src/helpers'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   '&:nth-of-type(even)': {
@@ -46,7 +46,7 @@ function ReportTableHead(props) {
     ];
 
     for (let i = 1; i <= numMonths; i++) {
-      const month = getCustomMonthInitials(i, true);
+      const month = getMonthAbbreviation(i);
       cells.push({
         id: i.toString(),
         disablePadding: true,
@@ -149,7 +149,7 @@ function ReportTable(props) {
   };
 
   const handleChangeRowsPerPage = (event) => {
-    setRowsPerPageOverride(parseInt(event.target.value, 10));
+    setRowsPerPageOverride(Number.parseInt(event.target.value, 10));
     setPage(0);
   };
 

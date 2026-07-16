@@ -31,7 +31,7 @@ function validateDates(expense) {
   if (!year || year < 2012 || year > 2050) return { isValid: false, msg: "Invalid 'year'. Must be between 2012 and 2050" };
   if (!month || month < 1 || month > 12) return { isValid: false, msg: "Invalid 'month'. Must be between 1 and 12" };
   if (day !== null) {
-    if (isNaN(day) || !Number.isInteger(day) || day < 1 || day > 31) return { isValid: false, msg: "Invalid 'day'. Accepted: null and (1,31)" };
+    if (Number.isNaN(Number(day)) || !Number.isInteger(day) || day < 1 || day > 31) return { isValid: false, msg: "Invalid 'day'. Accepted: null and (1,31)" };
   }
 
   return { isValid: true }
@@ -59,9 +59,9 @@ function validateNumbersAndBoolean(expense) {
     recurring
   } = expense;
 
-  if (isNaN(amountPaid) || amountPaid === false || amountPaid === true || amountPaid < 0 || amountPaid > 99999) return { isValid: false, msg: "Invalid 'amountPaid'. Must be a number, 0 <= x < 100000" };
-  if (isNaN(amountReimbursed) || amountReimbursed === false || amountReimbursed === true || amountReimbursed < 0 || amountReimbursed > amountPaid) return { isValid: false, msg: "Invalid 'amountReimbursed'. Must be a number, >= 0 and < amountPaid" };
-  if (!category || isNaN(category) || category < 1) return { isValid: false, msg: "Invalid 'category'. Must be a number > 0" };
+  if (Number.isNaN(Number(amountPaid)) || amountPaid === false || amountPaid === true || amountPaid < 0 || amountPaid > 99999) return { isValid: false, msg: "Invalid 'amountPaid'. Must be a number, 0 <= x < 100000" };
+  if (Number.isNaN(Number(amountReimbursed)) || amountReimbursed === false || amountReimbursed === true || amountReimbursed < 0 || amountReimbursed > amountPaid) return { isValid: false, msg: "Invalid 'amountReimbursed'. Must be a number, >= 0 and < amountPaid" };
+  if (!category || Number.isNaN(Number(category)) || category < 1) return { isValid: false, msg: "Invalid 'category'. Must be a number > 0" };
   if (recurring !== true && recurring !== false) return { isValid: false, msg: "Invalid 'recurring'. Must be boolean" };
 
   return { isValid: true }
@@ -142,7 +142,7 @@ function valideReportTypes(params) {
     'subCategory',
   ]
 
-  if (!allowed.includes(reportType) && isNaN(reportType)) return { isValid: false, msg: `Invalid 'reportType'. Accepted: ${allowed} and a categoryID` };
+  if (!allowed.includes(reportType) && Number.isNaN(Number(reportType))) return { isValid: false, msg: `Invalid 'reportType'. Accepted: ${allowed} and a categoryID` };
 
   return { isValid: true }
 }

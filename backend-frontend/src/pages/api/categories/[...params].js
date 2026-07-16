@@ -9,8 +9,8 @@ async function patchCategory(req, res) {
   const { params } = req.query;
 
   // Validate category id - mandatory
-  const categoryId = params[0];
-  if (isNaN(categoryId) || categoryId <= 0) return res.status(400).json({ message: "Invalid 'category id'. Must be a positive integer or null" });
+  const categoryId = Number(params[0]);
+  if (Number.isNaN(categoryId) || categoryId <= 0) return res.status(400).json({ message: "Invalid 'category id'. Must be a positive integer or null" });
 
   // Validate title - mandatory
   const { title } = req.body;
@@ -29,8 +29,8 @@ async function deleteCategory(req, res) {
   const { params } = req.query;
 
   // Validate category id - mandatory
-  const categoryId = params[0];
-  if (isNaN(categoryId) || categoryId <= 0) return res.status(400).json({ message: "Invalid 'category id'. Must be a positive integer or null" });
+  const categoryId = Number(params[0]);
+  if (Number.isNaN(categoryId) || categoryId <= 0) return res.status(400).json({ message: "Invalid 'category id'. Must be a positive integer or null" });
 
   const response = await categoryRepo.deleteCategory(req.auth.sub, categoryId);
 

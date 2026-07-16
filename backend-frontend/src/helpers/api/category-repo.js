@@ -16,8 +16,8 @@ async function createCategory(user, parentId, title) {
   if (parentId !== null) {
     // If it's not a root category, must check if it relates to an existing category for this user
     const categories = await getCategories(user);
-    const parent = categories.find(cat => cat.id === parentId && cat.parentId === null)
-    if (!parent) throw new Error("'parentId' must refer to a valid main category");
+    const hasParent = categories.some(cat => cat.id === parentId && cat.parentId === null)
+    if (!hasParent) throw new Error("'parentId' must refer to a valid main category");
 
   }
 

@@ -15,7 +15,7 @@ export default function CategorySelector(props) {
 
   // Derive instead of syncing state: if the selected category is no
   // longer in the mainCategories array (e.g. year changed), show empty
-  const category = mainCategories.find(cat => cat.id === selectedId) ? selectedId : '';
+  const category = mainCategories.some(cat => cat.id === selectedId) ? selectedId : '';
 
   return (
     <Stack direction='row' sx={{ alignItems: "center" }}>

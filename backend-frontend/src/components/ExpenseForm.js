@@ -166,6 +166,13 @@ export default function ExpenseForm(props) {
   // ---------------------------------------
   const defaultDate = getDefaultDate(expense);
 
+  let submitLabel;
+  if (isSubmitting) {
+    submitLabel = action === 'create' ? 'Creating...' : 'Saving...';
+  } else {
+    submitLabel = action === 'create' ? 'Create' : 'Save';
+  }
+
   return (
     <Container maxWidth="sm">
       <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate sx={{ mt: 4 }}>
@@ -359,9 +366,7 @@ export default function ExpenseForm(props) {
           startIcon={isSubmitting ? <CircularProgress size={18} color="inherit" /> : null}
           sx={{ mt: 3, mb: 2 }}
         >
-          {action === 'create'
-            ? (isSubmitting ? 'Creating...' : 'Create')
-            : (isSubmitting ? 'Saving...' : 'Save')}
+          {submitLabel}
         </Button>
       </Box>
     </Container>

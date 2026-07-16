@@ -80,7 +80,7 @@ function handleResponse(response: Response): Promise<unknown> {
         userService.logout();
       }
 
-      return Promise.reject(new Error((data?.message) || response.statusText));
+      throw new Error((data?.message) || response.statusText);
     }
 
     return data;

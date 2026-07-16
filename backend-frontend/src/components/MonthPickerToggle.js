@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Grid from '@mui/material/Grid';
-import { getCustomMonthInitials } from 'src/helpers';
+import { getMonthAbbreviation, getMonthInitials } from 'src/helpers';
 import { AppContext } from 'src/pages/_app';
 
 
@@ -41,7 +41,7 @@ export default function MonthPickerToggle(props) {
                 size="small" sx={padding}
                 selected={monthId === month}
               >
-                {getCustomMonthInitials(monthId, largeScreen.width)}
+                {largeScreen.width ? getMonthAbbreviation(monthId) : getMonthInitials(monthId)}
               </ToggleButton>)
           })
         }

@@ -85,9 +85,12 @@ export default function MyApp(props) {
 
   React.useEffect(() => {
     const stored = localStorage.getItem('themeMode');
-    const preferred = (stored === 'dark' || stored === 'light')
-      ? stored
-      : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    let preferred;
+    if (stored === 'dark' || stored === 'light') {
+      preferred = stored;
+    } else {
+      preferred = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
 
     if (preferred !== 'light') {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time sync with stored/system preference after hydration
