@@ -5,6 +5,6 @@ services:
     ports: 
       - 5432:5432
     environment:
-      POSTGRES_PASSWORD: 'my_postgresql_password'
+      POSTGRES_PASSWORD: '${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in database/.env — see database/.env.example}'
     volumes:
       - ${HOME}/Volumes/granola-db-data:/var/lib/postgresql/data

@@ -3,7 +3,12 @@
 # (backend-frontend). Targets the local docker Postgres from docker-compose.yml.
 set -e
 
-LOCAL="postgresql://postgres:my_postgresql_password@localhost:5432"
+# Load POSTGRES_PASSWORD from database/.env (see database/.env.example)
+set -a
+source "$(dirname "$0")/.env"
+set +a
+
+LOCAL="postgresql://postgres:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in database/.env}@localhost:5432"
 
 psql "$LOCAL/postgres" -c "DROP DATABASE IF EXISTS granola_test" > /dev/null
 psql "$LOCAL/postgres" -c "CREATE DATABASE granola_test" > /dev/null

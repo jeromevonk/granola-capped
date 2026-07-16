@@ -15,9 +15,10 @@ npm run test:integration   # repo tests against local Postgres (below)
 npm run lint
 ```
 
-Local Postgres: `database/docker-compose.yml` + `database/migrate_and_seed.sh`.
+Local Postgres: `cp database/.env.example database/.env`, then
+`database/docker-compose.yml` + `database/migrate_and_seed.sh`.
 Integration tests use a separate `granola_test` database — create it once with
-`database/setup_test_db.sh`.
+`database/setup_test_db.sh` (reads the same `database/.env`).
 
 
 ## Modernization (July 2026)
