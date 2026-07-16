@@ -19,11 +19,16 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
+import SearchIcon from '@mui/icons-material/Search';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import KeyboardIcon from '@mui/icons-material/Keyboard';
 import SearchBar from '../components/SearchBar';
+import KeyboardShortcutsDialog from '../components/KeyboardShortcutsDialog';
 import { useRouter } from 'next/router'
 import { useQueryClient } from '@tanstack/react-query';
 import { userService } from 'src/services';
 import { capitalizeFirstLetter } from 'src/helpers'
+import { useKeydown } from 'src/hooks/use-keydown';
 import { AppContext } from 'src/pages/_app';
 
 const pages = [
@@ -48,11 +53,6 @@ const pages = [
     title: 'Evolution',
     url: '/evolution'
   },
-  {
-    title: 'Search',
-    url: '/search-mobile',
-    onlySmallScreen: true
-  },
 ];
 
 const settings = [
@@ -73,11 +73,22 @@ const ResponsiveAppBar = () => {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
   const [user, setUser] = React.useState(null);
+  const [mobileSearchOpen, setMobileSearchOpen] = React.useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = React.useState(false);
 
   React.useEffect(() => {
     const subscription = userService.user.subscribe(x => setUser(x));
     return () => subscription.unsubscribe();
   }, []);
+
+  // '?' opens the shortcuts overlay — unless the user is typing somewhere
+  useKeydown((event) => {
+    const el = event.target;
+    const isTyping = el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
+    if (event.key === '?' && !isTyping) {
+      setShortcutsOpen(true);
+    }
+  });
 
   function logout() {
     // Drop all cached server data (it belongs to the logged-out user)
@@ -173,26 +184,70 @@ const ResponsiveAppBar = () => {
     }
   };
 
+  // Mobile variant: also collapse the expanded search field
+  function handleMobileSearch(event) {
+    handleSearch(event);
+    if (event.key == 'Enter' && event.target.value.trim() != '') {
+      setMobileSearchOpen(false);
+    }
+  };
+
+  // ----------------------------------------------------------
+  // Expanded mobile search: the field takes over the whole bar
+  // ----------------------------------------------------------
+  if (mobileSearchOpen) {
+    return (
+      <AppBar position="static">
+        <Container maxWidth="xl">
+          <Toolbar disableGutters>
+            <IconButton
+              aria-label="close search"
+              onClick={() => setMobileSearchOpen(false)}
+              sx={{ color: '#ffffff', mr: 1 }}
+            >
+              <ArrowBackIcon />
+            </IconButton>
+            <Box sx={{ flexGrow: 1 }}>
+              <SearchBar
+                handleSearch={handleMobileSearch}
+                setSearchFocus={setSearchFocus}
+                autoFocus
+              />
+            </Box>
+          </Toolbar>
+        </Container>
+      </AppBar>
+    );
+  }
+
   return (
     <AppBar position="static">
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          <AttachMoneyOutlined sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
-          <Typography
-            variant="h6"
-            noWrap
+          <Box
+            onClick={() => router.push('/')}
             sx={{
-              mr: 2,
               display: { xs: 'none', md: 'flex' },
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              letterSpacing: '.3rem',
-              color: 'inherit',
-              textDecoration: 'none',
+              alignItems: 'center',
+              mr: 2,
+              cursor: 'pointer',
             }}
           >
-            GRANOLA
-          </Typography>
+            <AttachMoneyOutlined sx={{ mr: 1 }} />
+            <Typography
+              variant="h6"
+              noWrap
+              sx={{
+                fontFamily: 'monospace',
+                fontWeight: 700,
+                letterSpacing: '.3rem',
+                color: 'inherit',
+                textDecoration: 'none',
+              }}
+            >
+              GRANOLA
+            </Typography>
+          </Box>
 
           {/* 
             // ----------------------------------------
@@ -242,23 +297,47 @@ const ResponsiveAppBar = () => {
             </Menu>
           </Box>
 
-          <AttachMoneyOutlined sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
-          <Typography
-            variant="h5"
-            noWrap
+          <Box
+            onClick={() => router.push('/')}
             sx={{
-              mr: 2,
               display: { xs: 'flex', md: 'none' },
+              alignItems: 'center',
               flexGrow: 1,
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              letterSpacing: '.3rem',
-              color: 'inherit',
-              textDecoration: 'none',
+              mr: 1,
+              cursor: 'pointer',
             }}
           >
-            GRANOLA
-          </Typography>
+            <AttachMoneyOutlined sx={{ mr: 0.5, fontSize: '1.2rem' }} />
+            <Typography
+              variant="subtitle1"
+              noWrap
+              sx={{
+                fontFamily: 'monospace',
+                fontWeight: 700,
+                letterSpacing: '.1rem',
+                color: 'inherit',
+                textDecoration: 'none',
+              }}
+            >
+              GRANOLA
+            </Typography>
+          </Box>
+
+          { /*
+            // ----------------------------------------
+            // Mobile search icon — expands over the bar
+            // ----------------------------------------
+            */
+          }
+          <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
+            <IconButton
+              aria-label="search"
+              onClick={() => setMobileSearchOpen(true)}
+              sx={{ color: '#ffffff' }}
+            >
+              <SearchIcon />
+            </IconButton>
+          </Box>
 
           {/* 
             // ----------------------------------------
@@ -364,6 +443,19 @@ const ResponsiveAppBar = () => {
                 </ListItemIcon>
                 <Typography textAlign="center">{themeMode === 'dark' ? 'Light mode' : 'Dark mode'}</Typography>
               </MenuItem>
+              {/* Keyboard shortcuts only make sense with a keyboard */}
+              <MenuItem
+                onClick={() => {
+                  handleCloseUserMenu();
+                  setShortcutsOpen(true);
+                }}
+                sx={{ display: { xs: 'none', md: 'flex' } }}
+              >
+                <ListItemIcon>
+                  <KeyboardIcon fontSize="small" />
+                </ListItemIcon>
+                <Typography textAlign="center">Keyboard shortcuts</Typography>
+              </MenuItem>
               {settings.map((setting) => (
                 <MenuItem key={setting.title} onClick={() => handleUserMenuClick(setting)}>
                   <Typography textAlign="center">{setting.title}</Typography>
@@ -373,6 +465,10 @@ const ResponsiveAppBar = () => {
           </Box>
         </Toolbar>
       </Container>
+      <KeyboardShortcutsDialog
+        open={shortcutsOpen}
+        onClose={() => setShortcutsOpen(false)}
+      />
     </AppBar>
   );
 };

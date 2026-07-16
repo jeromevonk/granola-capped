@@ -12,6 +12,7 @@ import ExpensesTableHead from './ExpensesTableHead';
 import {
   getCategoryTitles,
   customlocaleString,
+  formatCompactDate,
   getParentCategoryId,
   getComparator,
 } from 'src/helpers'
@@ -130,6 +131,14 @@ function ExpensesTable(props) {
 
   const isSelected = (id) => selected.indexOf(id) !== -1;
 
+  // Full dates (search view) don't fit on narrow screens — compact them.
+  // Month view dates are just day numbers and pass through untouched.
+  const formatDateCell = (date) => {
+    if (!date) return '-';
+    if (!largeScreen.width && typeof date === 'string') return formatCompactDate(date);
+    return date;
+  };
+
   // ----------------------------------------
   // Filterable
   // Get categories and sub-categories
@@ -158,9 +167,6 @@ function ExpensesTable(props) {
       return prev;
     }, {});
   }
-
-  // Avoid a layout jump when reaching the last page with empty rows.
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
   // Filter the rows
   const filteredRows = rows.slice().filter(item => {
@@ -276,9 +282,11 @@ function ExpensesTable(props) {
                         />
                       </TableCell>
                       {
-                        // Date - might be a day (in month view) or a full date (in search view)
+                        // Date - might be a day (in month view) or a full
+                        // date (in search view); the full date is shown
+                        // compact on narrow screens
                       }
-                      <TableCell align="center">{row.date || '-'}</TableCell>
+                      <TableCell align="center">{formatDateCell(row.date)}</TableCell>
                       {
                         // Description
                       }
@@ -310,15 +318,6 @@ function ExpensesTable(props) {
                     </StyledTableRow>
                   );
                 })}
-              {emptyRows > 0 && (
-                <TableRow
-                  style={{
-                    height: 33 * emptyRows,
-                  }}
-                >
-                  <TableCell colSpan={6} />
-                </TableRow>
-              )}
             </TableBody>
           </Table>
         </TableContainer>

@@ -1,6 +1,7 @@
 export {
   getCustomDateString,
   getCustomMonthInitials,
+  formatCompactDate,
   parseDate,
 };
 
@@ -18,6 +19,13 @@ function getCustomMonthInitials(monthId: number, isLarge: boolean): string {
   } else {
     return months[monthId - 1].substring(0, 2);
   }
+}
+
+// 'YYYY-MM-DD' -> 'DD/MM/YY', for narrow screens where the ISO date
+// doesn't fit (day may be 'XX' when it doesn't matter)
+function formatCompactDate(isoDate: string): string {
+  const [year, month, day] = isoDate.split(/[-/]/);
+  return `${day}/${month}/${year.slice(2)}`;
 }
 
 function parseDate(dateString: string): { year: string, month: string } {

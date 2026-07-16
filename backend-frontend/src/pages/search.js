@@ -1,13 +1,12 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import { Container, Box, Stack, Fab, LinearProgress } from '@mui/material';
+import { Container, Box, Stack, LinearProgress } from '@mui/material';
 import { useRouter, withRouter } from 'next/router'
 import ExpensesTable from '../components/ExpensesTable';
 import { expenseService, alertService } from 'src/services';
 import { mapExpenseToRow, toExpenseFormQuery, parseDate } from 'src/helpers'
 import { useCategories, useExpenseSearch, useInvalidateExpenses } from 'src/hooks/queries';
 import { AppContext } from 'src/pages/_app';
-import SearchIcon from '@mui/icons-material/Search';
 
 function Search(props) {
   const { query } = props.router.query;
@@ -99,27 +98,9 @@ function Search(props) {
         </Stack>
       </Box>
       {
-        // Only show the search icon on mobile
-        !largeScreen.width &&
-        <Container>
-          <Fab
-            color="primary"
-            size='small'
-            onClick={() => router.push({ pathname: '/search-mobile' })}
-            sx={{
-              margin: 0,
-              top: 'auto',
-              right: 20,
-              bottom: 20,
-              left: 'auto',
-              position: 'fixed',
-            }}
-          >
-            <SearchIcon />
-          </Fab>
-          { /* Add some blank space at the bottom, so user can scroll and search icon gives space to table pagination */}
-          <Box sx={{ height: 25 }} />
-        </Container>
+        // On mobile, leave breathing room below the table
+        // (search now lives in the app bar)
+        !largeScreen.width && <Box sx={{ height: 25 }} />
       }
     </Container>
   );
