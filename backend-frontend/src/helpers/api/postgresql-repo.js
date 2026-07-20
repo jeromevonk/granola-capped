@@ -194,15 +194,24 @@ async function getYears(user) {
     .orderBy(['year']);
 }
 
+// ILIKE treats % and _ as wildcards, so a raw search term like "50%"
+// would match as a pattern instead of the literal text. Escape those
+// (and the escape char itself) — Postgres uses backslash as the default
+// LIKE escape character.
+function escapeLike(term) {
+  return String(term).replace(/[\\%_]/g, '\\$&');
+}
+
 async function searchExpenses(user, search) {
+  const pattern = `%${escapeLike(search)}%`;
   return knex
     .select(...EXPENSE_COLUMNS)
     .from('expense')
     .where({ user_id: user })
     .andWhere(queryBuilder => {
       queryBuilder
-        .whereILike('description', `%${search}%`)
-        .orWhereILike('details', `%${search}%`);
+        .whereILike('description', pattern)
+        .orWhereILike('details', pattern);
     });
 }
 

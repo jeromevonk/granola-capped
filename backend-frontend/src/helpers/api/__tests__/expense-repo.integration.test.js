@@ -185,6 +185,22 @@ describe('searchExpenses', () => {
     expect(found).toHaveLength(2);
     expect(found.every(e => e.description !== 'ABC store')).toBe(true);
   });
+
+  it('treats % and _ as literal text, not LIKE wildcards', async () => {
+    await expenseRepo.createExpense(userA, validExpense({ description: 'Sale 50% off' }));
+    await expenseRepo.createExpense(userA, validExpense({ description: 'Deposit of 500' }));
+    await expenseRepo.createExpense(userA, validExpense({ description: 'Regular price' }));
+
+    // Searching "50%" must find only the literal "50%", not everything
+    // containing "50" (which the unescaped wildcard would have matched).
+    const found = await expenseRepo.searchExpenses(userA, '50%');
+    expect(found).toHaveLength(1);
+    expect(found[0].description).toBe('Sale 50% off');
+
+    // '_' must not act as a single-char wildcard: "r_gular" would match
+    // "Regular" if unescaped, but must find nothing as a literal.
+    expect(await expenseRepo.searchExpenses(userA, 'r_gular')).toHaveLength(0);
+  });
 });
 
 describe('getYears', () => {
