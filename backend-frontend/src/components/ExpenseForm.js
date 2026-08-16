@@ -191,7 +191,16 @@ export default function ExpenseForm(props) {
               type="date"
               variant="standard"
               defaultValue={defaultDate}
-              sx={{ minWidth: 160, maxWidth: 180 }}
+              sx={(theme) => ({
+                minWidth: 160,
+                maxWidth: 180,
+                // The native date picker icon follows color-scheme rather
+                // than MUI's palette. Set it explicitly so it remains
+                // visible against the dark input background.
+                '& input': {
+                  colorScheme: theme.palette.mode,
+                },
+              })}
               InputLabelProps={{
                 shrink: true,
               }}
