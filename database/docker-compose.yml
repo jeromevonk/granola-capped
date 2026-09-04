@@ -1,10 +1,11 @@
-version: '3'
 services:
   db:
-    image: postgres
-    ports: 
-      - 5432:5432
+    image: postgres:16
+    container_name: postgresql-general
+    restart: unless-stopped
+    ports:
+      - 127.0.0.1:5432:5432
     environment:
       POSTGRES_PASSWORD: '${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in database/.env — see database/.env.example}'
     volumes:
-      - ${HOME}/Volumes/granola-db-data:/var/lib/postgresql/data
+      - ${HOME}/Volumes/postgresql-db-data:/var/lib/postgresql/data
