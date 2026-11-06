@@ -1,4 +1,6 @@
-cd migrations;
+#!/bin/bash
+set -e
+cd "$(dirname "$0")/migrations";
 echo "Dropping"
 ./drop.sh;
 echo "Migrating"
