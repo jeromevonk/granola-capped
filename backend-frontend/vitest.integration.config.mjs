@@ -18,7 +18,7 @@ export default defineConfig({
     include: ['**/*.integration.test.js'],
     fileParallelism: false,
     env: {
-      PG_CONNECTION_STRING: 'postgresql://postgres:my_postgresql_password@localhost:5432/granola_test',
+      PG_CONNECTION_STRING: 'postgresql://postgres:my_postgresql_password@localhost:5433/granola_test',
     },
   },
 });

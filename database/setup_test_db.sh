@@ -8,7 +8,7 @@ set -a
 source "$(dirname "$0")/.env"
 set +a
 
-LOCAL="postgresql://postgres:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in database/.env}@localhost:5432"
+LOCAL="postgresql://postgres:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in database/.env}@localhost:${POSTGRES_PORT:-5433}"
 
 psql "$LOCAL/postgres" -c "DROP DATABASE IF EXISTS granola_test" > /dev/null
 psql "$LOCAL/postgres" -c "CREATE DATABASE granola_test" > /dev/null

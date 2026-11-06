@@ -4,7 +4,9 @@ services:
     container_name: postgresql-general
     restart: unless-stopped
     ports:
-      - 127.0.0.1:5432:5432
+      # Host port 5433 (not 5432) so it can run alongside other Postgres containers.
+      # Override with POSTGRES_PORT in database/.env.
+      - 127.0.0.1:${POSTGRES_PORT:-5433}:5432
     environment:
       POSTGRES_PASSWORD: '${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in database/.env — see database/.env.example}'
     volumes:
