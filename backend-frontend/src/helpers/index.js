@@ -4,3 +4,4 @@ export * from './expense-mapper';
 export * from './date-helper';
 export * from './fetch-wrapper';
 export * from './utils';
+export * from './money-input';

@@ -22,7 +22,13 @@ import * as Yup from 'yup';
 import { useForm } from 'react-hook-form';
 
 import { expenseService, alertService } from 'src/services';
-import { getParentCategoryId, getSubCategories } from 'src/helpers'
+import {
+  getParentCategoryId,
+  getSubCategories,
+  formatCentsInput,
+  formatMoneyInput,
+  parseMoneyInput,
+} from 'src/helpers'
 import { useCategories, useInvalidateExpenses } from 'src/hooks/queries';
 
 const getInitialFormData = (expense, categories) => {
@@ -67,11 +73,17 @@ export default function ExpenseForm(props) {
       .min(3, 'Minimum 3 characters'),
     details: Yup.string()
       .max(70, 'Maximum 70 characters'),
+    // Amount fields hold masked text ("1.234,56"); read it back as a number
     amountPaid: Yup.number()
+      .transform((_, originalValue) => parseMoneyInput(originalValue))
+      .typeError('Invalid amount')
       .required('Amount paid is required')
       .min(0, 'Must be >= 0')
       .max(99999, 'Must be < 100.000'),
     amountReimbursed: Yup.number()
+      // An emptied field means nothing was reimbursed
+      .transform((_, originalValue) => parseMoneyInput(originalValue) ?? 0)
+      .typeError('Invalid amount')
       .min(0, 'Must be >= 0')
       .max(99999, 'Must be < 100.000'),
     subCategory: Yup.number()
@@ -82,6 +94,29 @@ export default function ExpenseForm(props) {
 
   // Functions to build form with useForm() hook
   const { register, handleSubmit, formState: { errors } } = useForm(formOptions);
+
+  // Register an amount field with the cents mask: every keystroke or
+  // paste is re-formatted before react-hook-form sees it. Rewriting the
+  // value leaves the caret at the end, which is where digits enter.
+  const registerMoney = (name) => {
+    const field = register(name);
+    return {
+      ...field,
+      onChange: (event) => {
+        event.target.value = formatCentsInput(event.target.value);
+        return field.onChange(event);
+      },
+      // Tapping/focusing in the middle would insert digits there; keep
+      // the caret at the end. setTimeout runs after the browser places it.
+      onFocus: (event) => {
+        const input = event.target;
+        setTimeout(() => {
+          const end = input.value.length;
+          input.setSelectionRange(end, end);
+        }, 0);
+      },
+    };
+  };
 
   // Router
   const router = useRouter();
@@ -280,24 +315,26 @@ export default function ExpenseForm(props) {
               required
               id="amountPaid"
               label="Amount paid"
-              defaultValue={expense.amountPaid || ""}
-              inputProps={{ inputMode: 'numeric' }}
+              defaultValue={formatMoneyInput(expense.amountPaid)}
+              placeholder={formatMoneyInput(0)}
+              inputProps={{ inputMode: 'numeric', autoComplete: 'off' }}
               sx={{ width: 230 }}
               error={errors.amountPaid}
               helperText={errors.amountPaid?.message}
-              {...register('amountPaid')}
+              {...registerMoney('amountPaid')}
             />
             <TextField
               variant="standard"
               margin="normal"
               id="amountReimbursed"
               label="Amount Reimbursed"
-              defaultValue={expense.amountReimbursed || "0"}
-              inputProps={{ inputMode: 'numeric' }}
+              defaultValue={formatMoneyInput(expense.amountReimbursed || 0)}
+              placeholder={formatMoneyInput(0)}
+              inputProps={{ inputMode: 'numeric', autoComplete: 'off' }}
               sx={{ width: 230 }}
               error={errors.amountReimbursed}
               helperText={errors.amountReimbursed?.message}
-              {...register('amountReimbursed')}
+              {...registerMoney('amountReimbursed')}
             />
           </Stack>
           {

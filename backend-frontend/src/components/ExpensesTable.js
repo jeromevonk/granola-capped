@@ -310,7 +310,7 @@ function ExpensesTable(props) {
                       {
                         // Spent
                       }
-                      <Tooltip align="right" title={visibility ? `Paid: ${row.amountPaid}, Reimbursed: ${row.amountReimbursed}` : ''}>
+                      <Tooltip align="right" title={visibility ? `Paid: ${customlocaleString(row.amountPaid)}, Reimbursed: ${customlocaleString(row.amountReimbursed)}` : ''}>
                         <TableCell
                           align="right"
                         >{visibility ? customlocaleString(row.spent) : '••••••••'}</TableCell>
