@@ -14,6 +14,7 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
+import FormHelperText from '@mui/material/FormHelperText';
 import Tooltip from '@mui/material/Tooltip';
 import { useRouter } from 'next/router'
 
@@ -86,7 +87,9 @@ export default function ExpenseForm(props) {
       .typeError('Invalid amount')
       .min(0, 'Must be >= 0')
       .max(99999, 'Must be < 100.000'),
+    // An unselected Select holds "" which Yup casts to NaN (type error)
     subCategory: Yup.number()
+      .typeError('(sub)Category is required')
       .required('(sub)Category is required')
   });
 
@@ -95,9 +98,18 @@ export default function ExpenseForm(props) {
   // Functions to build form with useForm() hook
   const { register, handleSubmit, formState: { errors } } = useForm(formOptions);
 
+  // Sub-category goes through inputRef, not ref: with ref, react-hook-form
+  // focuses MUI's hidden native <input> on a validation error, and on
+  // Android focusing an <input> pops the keyboard up over the form.
+  // inputRef exposes { focus, value } where focus() targets the visible
+  // Select, so the error just scrolls to it.
+  const { ref: subCategoryRef, ...subCategoryField } = register('subCategory');
+
   // Register an amount field with the cents mask: every keystroke or
   // paste is re-formatted before react-hook-form sees it. Rewriting the
   // value leaves the caret at the end, which is where digits enter.
+  // Don't move the caret on focus (setSelectionRange): on Android Chrome
+  // that left the form below the field unpainted after closing the keyboard.
   const registerMoney = (name) => {
     const field = register(name);
     return {
@@ -105,15 +117,6 @@ export default function ExpenseForm(props) {
       onChange: (event) => {
         event.target.value = formatCentsInput(event.target.value);
         return field.onChange(event);
-      },
-      // Tapping/focusing in the middle would insert digits there; keep
-      // the caret at the end. setTimeout runs after the browser places it.
-      onFocus: (event) => {
-        const input = event.target;
-        setTimeout(() => {
-          const end = input.value.length;
-          input.setSelectionRange(end, end);
-        }, 0);
       },
     };
   };
@@ -371,8 +374,9 @@ export default function ExpenseForm(props) {
                 name="subCategory"
                 label="Sub-category"
                 value={formData.subCategory}
-                error={errors.subCategory}
-                {...register('subCategory')}
+                error={!!errors.subCategory}
+                inputRef={subCategoryRef}
+                {...subCategoryField}
                 onChange={handleChange}
               >
                 {
@@ -382,6 +386,9 @@ export default function ExpenseForm(props) {
                   ))
                 }
               </Select>
+              {errors.subCategory && (
+                <FormHelperText error>{errors.subCategory.message}</FormHelperText>
+              )}
             </FormControl>
           </Stack>
           {
