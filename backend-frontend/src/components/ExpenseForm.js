@@ -31,6 +31,7 @@ import {
   parseMoneyInput,
 } from 'src/helpers'
 import { useCategories, useInvalidateExpenses } from 'src/hooks/queries';
+import { useRepaintOnKeyboardClose } from 'src/hooks/use-repaint-on-keyboard-close';
 
 const getInitialFormData = (expense, categories) => {
   if (!expense.category) return { mainCategory: '', subCategory: '' };
@@ -59,6 +60,11 @@ const getDefaultDate = (expense) => {
 
 export default function ExpenseForm(props) {
   const { categories, mainCategories } = useCategories();
+
+  // Android Chrome sometimes leaves the form unpainted after the
+  // keyboard closes — see the hook
+  const formRef = React.useRef(null);
+  useRepaintOnKeyboardClose(formRef);
   const invalidateExpenses = useInvalidateExpenses();
 
   // -----------------------------------
@@ -213,7 +219,7 @@ export default function ExpenseForm(props) {
 
   return (
     <Container maxWidth="sm">
-      <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate sx={{ mt: 4 }}>
+      <Box component="form" ref={formRef} onSubmit={handleSubmit(onSubmit)} noValidate sx={{ mt: 4 }}>
         <Stack>
           {
             /* 
